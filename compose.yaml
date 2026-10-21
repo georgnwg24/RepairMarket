@@ -1,0 +1,36 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/database/db;DB_CLOSE_DELAY=-1
+      CHAT_UPLOAD_BASE_PATH: /app/uploads/
+      MANAGEMENT_ENDPOINTS_WEB_BASE_PATH: /
+    volumes:
+      - database:/app/database
+      - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8081/health"]
+      interval: 5s
+      timeout: 3s
+      start_period: 60s
+      retries: 12
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  database:
+  uploads:
