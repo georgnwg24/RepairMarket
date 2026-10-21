@@ -31,6 +31,8 @@ public interface UserMapper {
 
     UserDetailDto applicationUserToUserDetailDto(ApplicationUser user);
 
+    ApplicationUserDto applicationUserToDto(ApplicationUser user);
+
     void updateUserFromDto(UserUpdateDto userUpdate, @MappingTarget ApplicationUser user);
 
     @Mapping(target = "banned", source = "banned")

@@ -107,6 +107,26 @@ class ChatServiceTest {
     }
 
     @Test
+    void findOrCreateChat_unassignedWorkerCannotClaimChat() {
+        when(jobRequestRepository.findById(5L)).thenReturn(Optional.of(jobRequest));
+        when(jobOfferRepository.findJobOfferByJobRequestAndStatus(jobRequest, JobOfferStatus.ACCEPTED))
+            .thenReturn(Optional.of(JobOffer.builder().worker(worker).build()));
+        var stranger = ApplicationUser.builder().id(30L).role(Role.WORKER).build();
+        org.junit.jupiter.api.Assertions.assertThrows(AccessDeniedException.class,
+            () -> chatService.findOrCreateChat(stranger, 5L));
+        verify(chatRepository, never()).save(any());
+    }
+
+    @Test
+    void findOrCreateChat_completedJobStillOpensExistingChat() {
+        when(jobRequestRepository.findById(5L)).thenReturn(Optional.of(jobRequest));
+        when(chatRepository.findChatByJobRequest_Id(5L)).thenReturn(Optional.of(existingChat));
+        when(jobOfferRepository.findCompletedOfferByJobRequestId(5L))
+            .thenReturn(Optional.of(JobOffer.builder().worker(worker).status(JobOfferStatus.DONE).build()));
+        assertThat(chatService.findOrCreateChat(customer, 5L).getChatId()).isEqualTo(100L);
+    }
+
+    @Test
     void deleteChat_notParticipant_throwsAccessDenied() {
         when(chatRepository.findById(100L)).thenReturn(Optional.of(existingChat));
         ApplicationUser other = ApplicationUser.builder().id(99L).role(Role.CUSTOMER).build();

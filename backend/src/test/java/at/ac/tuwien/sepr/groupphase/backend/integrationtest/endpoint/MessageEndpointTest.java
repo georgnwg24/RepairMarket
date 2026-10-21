@@ -7,6 +7,9 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.message.MessageInquiryD
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.message.SimpleMessageDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.MessageMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Message;
+import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
+import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
+import at.ac.tuwien.sepr.groupphase.backend.type.Role;
 import at.ac.tuwien.sepr.groupphase.backend.repository.MessageRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
+@org.springframework.transaction.annotation.Transactional
 public class MessageEndpointTest implements TestData {
 
     @Autowired
@@ -44,6 +48,9 @@ public class MessageEndpointTest implements TestData {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -66,6 +73,10 @@ public class MessageEndpointTest implements TestData {
 
     @BeforeEach
     public void beforeEach() {
+        if (!userRepository.existsByUsername(ADMIN_USER)) {
+            userRepository.save(ApplicationUser.builder().username(ADMIN_USER)
+                .email("message-test@example.com").password("unused").role(Role.ADMIN).build());
+        }
         messageRepository.deleteAll();
         message = Message.MessageBuilder.aMessage()
             .withTitle(TEST_NEWS_TITLE)

@@ -6,6 +6,9 @@ import at.ac.tuwien.sepr.groupphase.backend.config.properties.SecurityProperties
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.message.MessageInquiryDto;
 import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.MessageMapper;
 import at.ac.tuwien.sepr.groupphase.backend.entity.Message;
+import at.ac.tuwien.sepr.groupphase.backend.entity.ApplicationUser;
+import at.ac.tuwien.sepr.groupphase.backend.repository.UserRepository;
+import at.ac.tuwien.sepr.groupphase.backend.type.Role;
 import at.ac.tuwien.sepr.groupphase.backend.repository.MessageRepository;
 import at.ac.tuwien.sepr.groupphase.backend.security.JwtTokenizer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
+@org.springframework.transaction.annotation.Transactional
 public class SecurityTest implements TestData {
 
     private static final List<Class<?>> mappingAnnotations = Lists.list(
@@ -77,6 +81,9 @@ public class SecurityTest implements TestData {
     private MessageRepository messageRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -100,6 +107,13 @@ public class SecurityTest implements TestData {
 
     @BeforeEach
     public void beforeEach() {
+        for (String username : List.of(DEFAULT_USER, ADMIN_USER)) {
+            if (!userRepository.existsByUsername(username)) {
+                userRepository.save(ApplicationUser.builder().username(username)
+                    .email(username + "@security-test.example").password("unused")
+                    .role(username.equals(ADMIN_USER) ? Role.ADMIN : Role.CUSTOMER).build());
+            }
+        }
         messageRepository.deleteAll();
         message = Message.MessageBuilder.aMessage()
             .withTitle(TEST_NEWS_TITLE)

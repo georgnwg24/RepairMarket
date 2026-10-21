@@ -5,6 +5,8 @@ import at.ac.tuwien.sepr.groupphase.backend.endpoint.dto.user.UserRegistrationDt
 import at.ac.tuwien.sepr.groupphase.backend.exception.NotFoundException;
 import at.ac.tuwien.sepr.groupphase.backend.service.UserService;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.access.prepost.PreAuthorize;
+import at.ac.tuwien.sepr.groupphase.backend.endpoint.mapper.UserMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,11 @@ public class LoginEndpoint {
 
     private final UserService userService;
 
-    public LoginEndpoint(UserService userService) {
+    private final UserMapper userMapper;
+
+    public LoginEndpoint(UserService userService, UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @PermitAll
@@ -45,12 +50,12 @@ public class LoginEndpoint {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bindingResult.getAllErrors());
         }
-        return new ResponseEntity<>(userService.register(userRegistrationDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(userMapper.applicationUserToDto(userService.register(userRegistrationDto)), HttpStatus.CREATED);
     }
 
     @DeleteMapping("{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PermitAll
+    @PreAuthorize("isAuthenticated() and #username == authentication.name")
     public void deleteCurrentUser(@PathVariable String username) {
         try {
             userService.deleteUserByUsername(username);

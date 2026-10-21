@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {filter, first, Observable, ReplaySubject, share, Subject, switchMap} from 'rxjs';
+import {distinctUntilChanged, EMPTY, Observable, ReplaySubject, share, Subject, switchMap} from 'rxjs';
 import {HttpClient, HttpResponse} from '@angular/common/http';
 import * as Stomp from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -30,7 +30,9 @@ export class ChatService {
   public notifications$ = this.notification$$.asObservable().pipe(share());
 
   constructor(private http: HttpClient, private auth: AuthService, private globals: Globals) {
-    this.connectWebsocket();
+    this.auth.loggedIn$.pipe(distinctUntilChanged()).subscribe(loggedIn => {
+      void this.restartConnection(loggedIn);
+    });
   }
 
   engageConversation(jobRequestId: number): Observable<CreatedChat> {
@@ -69,45 +71,34 @@ export class ChatService {
 
   // Websocket
 
-  subscribeToChat(chatId: number): Observable<ChatMessage> {
+  private subscribeToDestination<T>(destination: string): Observable<T> {
     return this.wsConnected$.pipe(
-      filter(connected => connected),
-      first(),
-      switchMap(() =>
-        new Observable<ChatMessage>(observer => {
-          const sub = this.stompClient.subscribe(
-            `/topic/chat/${chatId}`,
-            msgFrame => {
-              try {
-                observer.next(JSON.parse(msgFrame.body));
-              } catch (err) {
-                observer.error(err);
-              }
+      switchMap(connected => {
+        const client = this.stompClient;
+        if (!connected || !client?.connected) return EMPTY;
+        return new Observable<T>(observer => {
+          const sub = client.subscribe(destination, frame => {
+            try {
+              observer.next(JSON.parse(frame.body));
+            } catch (error) {
+              observer.error(error);
             }
-          );
-          return () => sub.unsubscribe();
-        })
-      ),
-      share(),
+          });
+          return () => {
+            if (client.connected) sub.unsubscribe();
+          };
+        });
+      }),
+      share()
     );
   }
 
+  subscribeToChat(chatId: number): Observable<ChatMessage> {
+    return this.subscribeToDestination<ChatMessage>(`/topic/chat/${chatId}`);
+  }
+
   subscribeToChatDeleted(): Observable<number> {
-    return this.wsConnected$.pipe(
-      filter(c => c),
-      first(),
-      switchMap(() =>
-        new Observable<number>(observer => {
-          const sub = this.stompClient!
-            .subscribe("/user/queue/chat/deleted", frame => {
-              const { chatId } = JSON.parse(frame.body);
-              observer.next(chatId);
-            });
-          return () => sub.unsubscribe();
-        })
-      ),
-      share(),
-    );
+    return this.subscribeToDestination<{chatId: number}>('/user/queue/chat/deleted').pipe(map(event => event.chatId));
   }
 
   sendWsMessage(chatId: number, payload: ChatMessagePayload) {
@@ -122,51 +113,11 @@ export class ChatService {
   }
 
   subscribeToReadMessages(chatId: number): Observable<{ reader: string }> {
-    return this.wsConnected$.pipe(
-      filter(c => c),
-      first(),
-      switchMap(() =>
-        new Observable<{ reader: string }>(obs => {
-          const sub = this.stompClient!.subscribe(
-            `/topic/chat/${chatId}/read`,
-            frame => {
-              try {
-                const payload = JSON.parse(frame.body) as { read: boolean; reader: string };
-                obs.next({ reader: payload.reader });
-              } catch (err) {
-                obs.error(err)
-              }
-            }
-          );
-          return () => sub.unsubscribe();
-        })
-      ),
-      share(),
-    );
+    return this.subscribeToDestination<{reader: string}>(`/topic/chat/${chatId}/read`);
   }
 
   subscribeToChatMessageActions(chatId: number): Observable<ChatMessageAction> {
-    return this.wsConnected$.pipe(
-      filter(m => m),
-      first(),
-      switchMap(() =>
-        new Observable<ChatMessageAction>(observer => {
-          const sub = this.stompClient!.subscribe(
-            `/topic/chat/${chatId}/messageAction`,
-            frame => {
-              try {
-                const action = JSON.parse(frame.body) as ChatMessageAction;
-                observer.next(action);
-              } catch (err) {
-                observer.error(err);
-              }
-            }
-          );
-          return () => sub.unsubscribe();
-        })
-      ),
-      share(),
-    );
+    return this.subscribeToDestination<ChatMessageAction>(`/topic/chat/${chatId}/messageAction`);
   }
 
   sendReadMessage(chatId: number) {
@@ -193,19 +144,33 @@ export class ChatService {
     }
   }
 
-  private connectWebsocket(): void {
-    const rawUrl = "http://localhost:8080/ws-chat";
+  private connectionGeneration = 0;
 
-    this.stompClient = new Stomp.Client({
+  private async restartConnection(loggedIn: boolean): Promise<void> {
+    const generation = ++this.connectionGeneration;
+    this.wsConnected$$.next(false);
+    const previous = this.stompClient;
+    this.stompClient = null;
+    if (previous) await previous.deactivate();
+    if (loggedIn && generation === this.connectionGeneration) this.connectWebsocket();
+  }
+
+  private connectWebsocket(): void {
+    const rawUrl = `${environment.backendUrl}/ws-chat`;
+
+    const client = new Stomp.Client({
       webSocketFactory: () => new SockJS(rawUrl) as any,
       reconnectDelay: 1_500,    // try reconnecting if connection cuts or anything happens
       debug: (str) => console.log('[STOMP]', str),
-      connectHeaders: {'Authorization': this.auth.getToken()},
+      beforeConnect: () => {
+        client.connectHeaders = {Authorization: this.auth.getToken()};
+      },
       onConnect: (frame) => {
+        if (this.stompClient !== client) return;
         console.log('[STOMP] Connected:', frame.headers['user-name']);
         this.wsConnected$$.next(true);
 
-        this.stompClient!.subscribe(
+        client.subscribe(
           "/user/queue/notifications",
           (message) => {
             try {
@@ -222,11 +187,12 @@ export class ChatService {
       },
       onWebSocketClose: (evt) => {
         console.warn('[STOMP] WebSocket closed.', evt);
-        this.wsConnected$$.next(false);
+        if (this.stompClient === client) this.wsConnected$$.next(false);
       },
     });
 
-    this.stompClient.activate();
+    this.stompClient = client;
+    client.activate();
   }
 
 }

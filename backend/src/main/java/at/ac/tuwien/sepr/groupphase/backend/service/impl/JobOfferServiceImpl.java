@@ -294,7 +294,7 @@ public class JobOfferServiceImpl implements JobOfferService {
 
         offer.setCreatedAt(LocalDateTime.now());
 
-        boolean priceUpdated = offer.getPrice() != updateDto.getPrice();
+        boolean priceUpdated = !java.util.Objects.equals(offer.getPrice(), updateDto.getPrice());
 
         offer.setPrice(updateDto.getPrice());
         offer.setComment(updateDto.getComment());

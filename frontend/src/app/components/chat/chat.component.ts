@@ -82,7 +82,12 @@ export class ChatComponent implements OnInit, OnDestroy {
         if (id) {
           this.selectedChatId = +id;
           const chat = this.chatsOverview.find(chat => chat.id === +id);
-          chat.numberOfUnreadMessages = 0;
+          if (chat) {
+            chat.numberOfUnreadMessages = 0;
+            this.selectedChatBanned = chat.counterPartBanned;
+          } else {
+            this.selectedChatId = null;
+          }
         }
       },
       error: err => {

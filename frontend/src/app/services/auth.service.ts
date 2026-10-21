@@ -54,7 +54,16 @@ export class AuthService {
    * Check if a valid JWT token is saved in the localStorage
    */
   isLoggedIn() {
-    return !!this.getToken() && (this.getTokenExpirationDate(this.getToken()).valueOf() > new Date().valueOf());
+    const token = this.getToken();
+    if (!token) return false;
+    try {
+      const expiration = this.getTokenExpirationDate(token);
+      if (expiration && expiration.valueOf() > Date.now()) return true;
+    } catch {
+      // Invalid persisted credentials must not prevent the app from loading.
+    }
+    localStorage.removeItem('authToken');
+    return false;
   }
 
   logoutUser() {

@@ -94,6 +94,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApplicationUser register(UserRegistrationDto userRegistrationDto) {
         LOGGER.debug("Register user: {}", userRegistrationDto);
+        if (userRegistrationDto.getRole() != Role.CUSTOMER && userRegistrationDto.getRole() != Role.WORKER) {
+            throw new AccessDeniedException("Only customer and worker accounts can be registered");
+        }
+        if ("deleted user".equalsIgnoreCase(userRegistrationDto.getUsername())) {
+            throw new AccessDeniedException("This username is reserved");
+        }
         if (userRepository.existsByEmail(userRegistrationDto.getEmail())) {
             throw new EmailAlreadyExistsException(userRegistrationDto.getEmail());
         }
@@ -170,10 +176,19 @@ public class UserServiceImpl implements UserService {
     public void deleteUserByUsername(String username) {
         ApplicationUser user = userRepository.findUserByUsername(username).orElseThrow(() -> new NotFoundException("No user with username: " + username));
 
+        if ("deleted user".equals(user.getUsername())) {
+            throw new AccessDeniedException("The system account cannot be deleted");
+        }
         // remove from push notifications
         pushSubscriptionRepository.deleteByUser(user);
 
-        ApplicationUser deletedUser = userRepository.findUserByUsername("deleted user").orElseThrow();
+        ApplicationUser deletedUser = userRepository.findUserByUsername("deleted user").orElseGet(() ->
+            userRepository.save(ApplicationUser.builder()
+                .username("deleted user")
+                .email("")
+                .password(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                .role(Role.CUSTOMER)
+                .build()));
 
         // swap user with deletedUser in ratings
         List<Rating> ratingsFrom = ratingRepository.findAllByFromUser(user);

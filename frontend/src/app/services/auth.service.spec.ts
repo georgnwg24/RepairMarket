@@ -16,4 +16,17 @@ describe('AuthService', () => {
     const service: AuthService = TestBed.inject(AuthService);
     expect(service).toBeTruthy();
   });
+  afterEach(() => localStorage.removeItem('authToken'));
+
+  it('recovers from a malformed token before service initialization', () => {
+    localStorage.setItem('authToken', 'broken-token');
+    const service = TestBed.inject(AuthService);
+    expect(service.isLoggedIn()).toBeFalse();
+    expect(localStorage.getItem('authToken')).toBeNull();
+  });
+
+  it('rejects a token without an expiration', () => {
+    localStorage.setItem('authToken', 'e30.e30.signature');
+    expect(TestBed.inject(AuthService).isLoggedIn()).toBeFalse();
+  });
 });

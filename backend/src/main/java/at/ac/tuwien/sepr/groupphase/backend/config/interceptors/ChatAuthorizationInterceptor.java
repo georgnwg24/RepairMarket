@@ -35,41 +35,31 @@ public class ChatAuthorizationInterceptor implements ChannelInterceptor {
         LOGGER.trace("PRESEND: \n accessor={} \n msg={} \n user={}",
             accessor, msg, (accessor == null ? "null" : accessor.getUser()));
 
+        if (accessor == null) {
+            return msg;
+        }
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-            LOGGER.debug("STOMP CONNECT");
-            // Access authentication header(s) and invoke accessor.setUser(user) (spring doc)
-            accessor.setUser(jwtFilter.extractAuthentication(accessor.getNativeHeader("Authorization").getFirst()));
-        } else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            String dest = accessor.getDestination(); // "/topic/chat/123" OR "/user/queue/notifications"
-
-            if ("/user/queue/notifications".equals(dest)) {
-                return msg;
+            accessor.setUser(jwtFilter.extractAuthentication(accessor.getFirstNativeHeader("Authorization")));
+        } else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand()) || StompCommand.SEND.equals(accessor.getCommand())) {
+            if (accessor.getUser() == null) {
+                throw new AccessDeniedException("Authentication required");
             }
-
-            if (dest != null && dest.matches("^/topic/chat/-?\\d+/read$")) {
-                return msg;
-            }
-
-            if (dest != null && dest.matches("^/topic/chat/-?\\d+/messageAction$")) {
-                return msg;
-            }
-
-            if ("/user/queue/chat/deleted".equals(dest)) {
-                return msg;
-            }
-
-            if (dest != null && dest.matches("^/topic/chat/-?\\d+$")) {
-                long chatId = Long.parseLong(dest.substring("/topic/chat/".length()));
-                String user = accessor.getUser().getName();
-                if (!chatService.isMember(chatId, user)) {
-                    throw new AccessDeniedException("Cannot subscribe to chat " + chatId);
+            String dest = accessor.getDestination();
+            if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+                if ("/user/queue/notifications".equals(dest) || "/user/queue/chat/deleted".equals(dest)) {
+                    return msg;
                 }
-                return msg;
+                if (dest == null || !dest.matches("^/topic/chat/-?\\d+(/read|/messageAction)?$")) {
+                    throw new AccessDeniedException("Cannot subscribe to " + dest);
+                }
+            } else if (dest == null || !dest.matches("^/app/chat/-?\\d+/(sendMessage|read|messageAction)$")) {
+                throw new AccessDeniedException("Cannot send to " + dest);
             }
-
-            throw new AccessDeniedException("Cannot subscribe to " + dest);
+            long chatId = Long.parseLong(dest.split("/")[3]);
+            if (!chatService.isMember(chatId, accessor.getUser().getName())) {
+                throw new AccessDeniedException("Not a participant of chat " + chatId);
+            }
         }
         return msg;
     }
-
 }

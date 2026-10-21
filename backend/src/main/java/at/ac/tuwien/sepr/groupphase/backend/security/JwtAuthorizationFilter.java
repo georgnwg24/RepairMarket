@@ -14,7 +14,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -22,7 +21,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -75,55 +73,30 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             throw new IllegalArgumentException("Authorization header is malformed or missing");
         }
 
-        byte[] signingKey = securityProperties.getJwtSecret().getBytes();
-
-        Claims claims = Jwts.parser().verifyWith(Keys.hmacShaKeyFor(signingKey)).build()
-            .parseSignedClaims(token.replace(securityProperties.getAuthTokenPrefix(), ""))
-            .getPayload();
-
-        String username = claims.getSubject();
-
-        userRepository.findUserByUsername(username).ifPresent(user -> {
-            if (user.isBanned()) {
-                throw new UserBannedException("User is banned");
-            }
-        });
-
-        List<SimpleGrantedAuthority> authorities = ((List<?>) claims
-            .get("rol")).stream()
-            .map(authority -> new SimpleGrantedAuthority((String) authority))
-            .toList();
-
-        if (username == null || username.isEmpty()) {
-            throw new IllegalArgumentException("Token contains no user");
-        }
-
-        MDC.put("u", username);
-
-        return new UsernamePasswordAuthenticationToken(username, null, authorities);
+        return (UsernamePasswordAuthenticationToken) extractAuthentication(token);
     }
 
     public Authentication extractAuthentication(String bearer) {
-        String token = bearer.replace(securityProperties.getAuthTokenPrefix(), "").trim();
+        if (bearer == null || bearer.isBlank()) {
+            throw new IllegalArgumentException("Missing token");
+        }
+        String token = bearer.startsWith(securityProperties.getAuthTokenPrefix())
+            ? bearer.substring(securityProperties.getAuthTokenPrefix().length()).trim() : bearer;
         Claims claims = Jwts.parser()
             .verifyWith(Keys.hmacShaKeyFor(securityProperties.getJwtSecret().getBytes()))
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
-
+            .build().parseSignedClaims(token).getPayload();
         String username = claims.getSubject();
-
-        if (username == null || username.isEmpty()) {
+        if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("Token contains no user");
         }
-
-        List<String> roles = (List<String>) claims.get("rol");
-        List<GrantedAuthority> authorities = roles.stream()
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
-
-        authorities.forEach(grantedAuthority -> LOGGER.debug("Role: {}", grantedAuthority));
-
+        var user = userRepository.findUserByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("Account no longer exists"));
+        if (user.isBanned() || "deleted user".equals(username)) {
+            throw new UserBannedException("User is banned");
+        }
+        List<SimpleGrantedAuthority> authorities = ((List<?>) claims.get("rol")).stream()
+            .map(role -> new SimpleGrantedAuthority((String) role)).toList();
+        MDC.put("u", username);
         return new UsernamePasswordAuthenticationToken(username, null, authorities);
     }
 }

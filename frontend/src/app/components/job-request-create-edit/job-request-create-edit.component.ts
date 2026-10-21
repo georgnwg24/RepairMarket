@@ -60,6 +60,7 @@ export class JobRequestCreateEditComponent implements OnInit, AfterViewInit, OnD
   statusKeys: string[] = [];
   properties: Property[] = [];
   error = false;
+  saving = false;
   errorMessage = '';
   selectedFiles: File[] = [];
   existingImages: JobRequestImage[] = [];
@@ -144,6 +145,7 @@ export class JobRequestCreateEditComponent implements OnInit, AfterViewInit, OnD
   }
 
   async onSubmit(form: NgForm): Promise<void> {
+    if (this.saving) return;
     this.error = false;
     this.imageErrorMessage = null;
 
@@ -159,23 +161,25 @@ export class JobRequestCreateEditComponent implements OnInit, AfterViewInit, OnD
       default: console.error('Unknown JobRequestCreateEditMode', this.mode); return;
     }
 
+    this.saving = true;
     observable.subscribe({
       next: async (data) => {
         this.notification.success(`Job Request ${data.title} successfully ${this.modeActionFinished}.`);
 
-        if (this.selectedFiles.length > 0) {
-          try {
-            await this.uploadImagesSequentially(data.id);
-            await this.router.navigate(['/customer']);
-          } catch (error) {
-            this.error = true;
-            this.errorMessage = `The job request was saved, but some images failed to upload. You can edit the request to try again.`;
-          }
-        } else {
+        this.jobId = data.id;
+        this.mode = JobRequestCreateEditMode.edit;
+        try {
+          await this.uploadImagesSequentially(this.jobId);
           await this.router.navigate(['/customer']);
+        } catch (error) {
+          this.error = true;
+          this.errorMessage = 'The job was saved. Some images could not be uploaded; save again to retry the remaining images.';
+        } finally {
+          this.saving = false;
         }
       },
       error: err => {
+        this.saving = false;
         if (err.status === 400 && Array.isArray(err.error)) {
           let nonFieldErrors: string[] = [];
           const fieldToControlMap: { [key: string]: string } = {
@@ -520,14 +524,16 @@ export class JobRequestCreateEditComponent implements OnInit, AfterViewInit, OnD
   }
 
   private async uploadImagesSequentially(jobRequestId: number): Promise<void> {
-    for (let i = 0; i < this.selectedFiles.length; i++) {
-      const file = this.selectedFiles[i];
-      try {
-        await firstValueFrom(this.service.uploadImage(jobRequestId, file, i));
-      } catch (error) {
-        console.error(`Failed to upload image ${file.name}:`, error);
-        throw error;
-      }
+    while (this.selectedFiles.length > 0) {
+      const file = this.selectedFiles[0];
+      const image = await firstValueFrom(this.service.uploadImage(jobRequestId, file, this.existingImages.length));
+      this.existingImages.push(image);
+      const preview = this.previewUrls.shift();
+      this.imageCache[image.id] = preview;
+      this.thumbnailCache[image.id] = this.previewThumbnails[preview] || preview;
+      delete this.previewThumbnails[preview];
+      this.selectedFiles.shift();
+      this.updateGalleryItems();
     }
   }
 

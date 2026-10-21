@@ -145,7 +145,8 @@
           </button>
           <button
             class="btn btn--secondary"
-            type="submit">
+            type="submit"
+            [disabled]="saving || processingQueue">
             {{submitButtonText}}
           </button>
         </div>

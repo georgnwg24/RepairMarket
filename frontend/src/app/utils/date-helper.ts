@@ -77,5 +77,5 @@ export function chatPreviewFormatted(input: string | Date | undefined): string {
     month: '2-digit',
     ...(date.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {})
   };
-  return date.toLocaleDateString("de_AT", opts);
+  return date.toLocaleDateString("de-AT", opts);
 }

@@ -85,9 +85,13 @@ public class ChatServiceImpl implements ChatService {
 
         Optional<Chat> chat = this.chatRepository.findChatByJobRequest_Id(jobRequestId);
 
-        ApplicationUser worker = (user.getRole() == Role.WORKER)
-            ? user
-            : this.jobOfferRepository.findJobOfferByJobRequestAndStatus(jobRequest, JobOfferStatus.ACCEPTED).orElseThrow().getWorker();
+        ApplicationUser worker = jobOfferRepository.findJobOfferByJobRequestAndStatus(jobRequest, JobOfferStatus.ACCEPTED)
+            .or(() -> jobOfferRepository.findCompletedOfferByJobRequestId(jobRequestId))
+            .orElseThrow(() -> new IllegalStateException("A job offer must be accepted before starting a chat"))
+            .getWorker();
+        if (!user.getId().equals(worker.getId()) && !user.getId().equals(jobRequest.getCustomer().getId())) {
+            throw new AccessDeniedException("You are not a participant of this job");
+        }
 
         CreatedChatDto chatDto;
         if (chat.isPresent()) { // return existing chatId
