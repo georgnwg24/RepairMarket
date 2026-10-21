@@ -1,0 +1,155 @@
+// Define Sass variables to align with the global stylesheet
+$primary-color: #003049;
+$link-color: #0d6efd;
+$success-color: #60c46e;
+$white: #fff;
+$black: #000000;
+$header-height: 70px; // A variable for the main app header's height
+
+// Styles for the new persistent mobile filter bar
+.mobile-filter-bar {
+  // ADDED: Sticky positioning to keep the bar visible on scroll
+  position: sticky;
+  top: $header-height; // Sticks the bar right under the main app header
+  z-index: 110; // Ensures it stays on top of the content scrolling underneath
+
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  overflow: hidden; // Important for the expand/collapse animation
+
+  .filter-bar__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+
+    h4 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+
+      .bi {
+        margin-right: 0.5rem;
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .filter-bar__toggle-icon {
+    transition: transform 0.3s ease-in-out;
+    &.is-open {
+      transform: rotate(180deg);
+    }
+  }
+
+  .filter-bar__content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    border-top: 1px solid var(--border-color);
+
+    // Hide the H4 from the app-search component to avoid duplication
+    ::ng-deep app-search .search-sidebar > h4 {
+      display: none;
+    }
+
+    &.is-open {
+      max-height: 1500px; // A large value to allow content to expand
+    }
+  }
+}
+
+
+// --- Styles for Job Card and Offers Section (remain the same) ---
+.job-and-offers-container {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  overflow: hidden;
+  background-color: var(--white);
+
+  &.is-clickable {
+    cursor: pointer;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  }
+
+  ::ng-deep app-job-card .job-card {
+    border: none !important;
+  }
+
+  &.selected {
+    border-color: darken($primary-color, 10%);
+    background-color: $primary-color;
+
+    ::ng-deep app-job-card .job-card {
+      color: $white ;
+      .job-card__title, .detail-item__label { color: lighten($black, 40%); }
+      .job-card__description, .detail-item__value { color: lighten($black, 40%); }
+    }
+  }
+}
+
+.offers-section {
+   background-color: lighten($primary-color, 10%);
+  color: $white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+  padding: 0 1.5rem;
+
+  &.is-expanded {
+    max-height: 1000px;
+    padding: 1.5rem;
+  }
+
+  ::ng-deep .table {
+    color: inherit;
+    border-radius: 8px;
+    overflow: hidden;
+    th, td {
+      border-color: lighten($primary-color, 10%);
+      padding: 0.75rem 1rem;
+
+      &:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+      }
+      &:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+    }
+
+    th:first-child { border-top-left-radius: 8px; }
+    th:last-child { border-top-right-radius: 8px; }
+    tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+    tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+    tr.table-dark {
+      td, th {
+        background-color: darken($primary-color, 3%) !important;
+        color: $white !important;
+      }
+    }
+
+    tr.table-row-success {
+      td, th {
+        background-color: $success-color !important;
+      }
+    }
+
+    a {
+      color: $link-color;
+      font-weight: 500;
+      &:hover { color: $white; }
+    }
+  }
+}
+

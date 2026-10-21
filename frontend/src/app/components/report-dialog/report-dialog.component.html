@@ -1,0 +1,47 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="report-dialog-title">
+        Report Job
+      </h5>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="modal"
+        aria-label="Close"
+      ></button>
+    </div>
+
+    <div class="modal-body">
+      <p>
+        Please provide a reason for reporting
+        “<strong>{{ reportWhat }}</strong>”:
+      </p>
+      <textarea
+        class="form-control"
+        [(ngModel)]="reason"
+        rows="4"
+        placeholder="Enter your reason here..."
+        maxlength="1023"
+      ></textarea>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="onCancel()"
+        data-bs-dismiss="modal">
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn btn-danger"
+        (click)="onConfirm()"
+        [disabled]="!reason.trim()"
+        data-bs-dismiss="modal">
+        Submit
+      </button>
+    </div>
+  </div>
+</div>

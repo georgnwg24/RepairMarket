@@ -1,0 +1,72 @@
+.report-detail-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 25px;
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.detail-section {
+  background-color: var(--light-color);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+  }
+
+  .detail-value {
+    font-size: 1.05rem;
+    word-wrap: break-word;
+
+    &.title {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    &.description {
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+    &.price {
+      font-weight: bold;
+      color: var(--success-color);
+    }
+  }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.85em;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  border-radius: 0.375rem;
+
+  &.status-pending { background-color: var(--warning-color); color: #000; }
+  &.status-accepted { background-color: var(--success-color); }
+  &.status-done { background-color: var(--info-color); }
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}

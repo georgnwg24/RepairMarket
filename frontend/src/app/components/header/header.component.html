@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark ps-4">
+  <a class="navbar-brand ml-lg-5" [routerLink]="authService.getUserRole() === 'WORKER' ? ['/worker', 'requests'] : ['/customer', 'requests']" routerLinkActive="active">
+    <img
+      src="assets/BRP_logo.png"
+      alt="BRP"
+      height="50"
+      onerror="
+      this.style.display='none';
+      this.nextElementSibling.style.display='inline';
+    "
+    />
+  <span style="
+      display: none;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: #fff;
+      letter-spacing: 0.02em;
+    ">
+    BRP
+  </span>
+  </a>
+  <button class="navbar-toggler ml-5" type="button" (click)="isNavbarCollapsed = !isNavbarCollapsed"
+          [attr.aria-expanded]="!isNavbarCollapsed" aria-controls="navbarSupportedContent">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent" [ngbCollapse]="isNavbarCollapsed">
+    <ul class="navbar-nav me-auto">
+      <a class="nav-link" *ngIf="!authService.isLoggedIn()" routerLink="/login" routerLinkActive="active"><span>Login</span></a>
+      <a class="nav-link" *ngIf="!authService.isLoggedIn()" routerLink="/register" routerLinkActive="active"><span>Register</span></a>
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() === 'ADMIN'" routerLink="/admin/reports" routerLinkActive="active"><span>Reports</span></a>
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() === 'ADMIN'" routerLink="/admin/licenses" routerLinkActive="active"><span>Licenses</span></a>
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() === 'ADMIN'" routerLink="/admin/users" routerLinkActive="active"><span>Users</span></a>
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() === 'ADMIN'" routerLink="/admin/requests" routerLinkActive="active"><span>Requests</span></a>
+
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() === 'CUSTOMER'" [routerLink]="['/customer', 'requests']" routerLinkActive="active"><span>Your Job Requests</span></a>
+
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() === 'WORKER'" [routerLink]="['/worker', 'requests']" routerLinkActive="active"><span>Open Job Requests</span></a>
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() === 'WORKER'" [routerLink]="['/worker', 'offers']" routerLinkActive="active"><span>View Offers</span></a>
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() === 'WORKER'" [routerLink]="['/worker', 'saved-searches']" routerLinkActive="active"><span>Saved Searches</span></a>
+    </ul>
+
+    <ul class="navbar-nav">
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() !== 'ADMIN'" routerLink="/chats" routerLinkActive="active"><span>Chats</span></a>
+      <a class="nav-link" *ngIf="authService.isLoggedIn() && authService.getUserRole() !== 'ADMIN'" [routerLink]="[ authService.getUserRole().toLowerCase() , 'edit']" routerLinkActive="active"><span>{{authService.getUsername()}}</span></a>
+      <a class="nav-link" *ngIf="authService.isLoggedIn()" routerLink="/" (click)="authService.logoutUser()"><span>Logout</span></a>
+    </ul>
+  </div>
+</nav>

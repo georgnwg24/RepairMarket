@@ -1,0 +1,17 @@
+{
+  "name": "Bau- und Reparaturplattform",
+  "short_name": "BRP",
+  "theme_color": "#1976d2",
+  "background_color": "#fafafa",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "icons": [
+    {
+      "src": "./BRP_logo.png",
+      "type": "image/png",
+      "sizes": "256x256",
+      "purpose": "maskable any"
+    }
+  ]
+}

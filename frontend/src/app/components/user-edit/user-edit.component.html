@@ -1,0 +1,115 @@
+<section class="form-page-section">
+  <div class="form-page-card">
+    <div class="form-page-card__body">
+      <h3 class="form-page-card__title">Edit Profile Information</h3>
+      <form [formGroup]="updateUserForm" (ngSubmit)="onSubmit()">
+
+        <!-- Public Information -->
+        <h4 class="section-title">Public Information</h4>
+        <div class="mb-3">
+          <label for="firstName" class="form-label small">First Name</label>
+          <input type="text" formControlName="firstName" class="form-control" placeholder="First Name"
+                 [ngClass]="{ 'is-invalid': submitted && form.firstName.errors }"/>
+          <div *ngIf="submitted && form.firstName.errors" class="invalid-feedback">
+            <div *ngIf="form.firstName.errors.max">First name is too long.</div>
+            <div *ngIf="form.firstName.errors.serverError">{{ form.firstName.errors.serverError }}</div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="lastName" class="form-label small">Last Name</label>
+          <input type="text" formControlName="lastName" class="form-control" placeholder="Last Name"
+                 [ngClass]="{ 'is-invalid': submitted && form.lastName.errors }"/>
+          <div *ngIf="submitted && form.lastName.errors" class="invalid-feedback">
+            <div *ngIf="form.lastName.errors.max">Last name is too long.</div>
+            <div *ngIf="form.lastName.errors.serverError">{{ form.lastName.errors.serverError }}</div>
+          </div>
+        </div>
+
+
+        <!-- Worker-specific address fields are now handled by a separate component -->
+        <div *ngIf="!modeIsCustomer" class="worker-fields-container mb-3">
+          <label class="form-label">Location</label>
+          <app-area-finder [parentForm]="updateUserForm"></app-area-finder>
+          <div *ngIf="submitted" class="text-danger small mt-1">
+            <div *ngIf="form.countryCode.errors?.required">Country is required.</div>
+            <div *ngIf="form.postalCode.errors?.required">Postal code is required.</div>
+            <div *ngIf="form.area.errors?.required">Area is required for workers.</div>
+          </div>
+        </div>
+
+        <!-- Private Information -->
+        <h4 class="section-title">Private Information</h4>
+        <div class="mb-3">
+          <label for="username" class="form-label small">Username</label>
+          <input id="username" type="text" formControlName="username" class="form-control" placeholder="Username" readonly/>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label small">Email</label>
+          <input id="email" type="email" formControlName="email" class="form-control" placeholder="Email"
+                 [ngClass]="{ 'is-invalid': submitted && form.email.errors }"/>
+          <div *ngIf="submitted && form.email.errors" class="invalid-feedback">
+            <div *ngIf="form.email.errors.required">Email is required.</div>
+            <div *ngIf="form.email.errors.email">Please provide a valid email address.</div>
+            <div *ngIf="form.email.errors.serverError">{{ form.email.errors.serverError }}</div>
+          </div>
+        </div>
+
+        <!-- Worker-specific: Licenses -->
+        <div *ngIf="!modeIsCustomer">
+          <h4 class="section-title">Licenses</h4>
+          <ul class="detail-list">
+            <li class="detail-list__item" *ngFor="let license of licenses">
+              <a (click)="downloadFile(license)">{{ license.filename }} ({{license.status}})</a>
+              <div class="detail-list__actions">
+                <a *ngIf="!isApproved(license)" class="btn btn--warning btn--sm" [routerLink]="['/worker', 'license', license.id, 'edit']"><i class="bi bi-gear"></i></a>
+                <button type="button" class="btn btn--danger btn--sm" (click)="licenseForDeletion = license" data-bs-toggle="modal" data-bs-target="#delete-license-dialog"><i class="bi bi-trash"></i></button>
+              </div>
+            </li>
+            <li class="detail-list__add-new"><a [routerLink]="['/worker', 'license', 'create']">Add New License</a></li>
+          </ul>
+        </div>
+
+        <!-- Customer-specific: Properties -->
+        <div *ngIf="modeIsCustomer">
+          <h4 class="section-title">Properties</h4>
+          <ul class="detail-list">
+            <li class="detail-list__item" *ngFor="let property of properties">
+              <span>{{ property.address }}</span>
+              <div class="detail-list__actions">
+                <a class="btn btn--warning btn--sm" [routerLink]="['/customer', 'address', property.id, 'edit']"><i class="bi bi-gear"></i></a>
+                <button type="button" class="btn btn--danger btn--sm" (click)="propertyForDeletion = property" data-bs-toggle="modal" data-bs-target="#delete-property-dialog"><i class="bi bi-trash"></i></button>
+              </div>
+            </li>
+            <li class="detail-list__add-new"><a [routerLink]="['/customer', 'address', 'create']">Add New Property</a></li>
+          </ul>
+        </div>
+
+        <div class="d-grid gap-2 mt-4">
+          <button type="submit" class="btn btn--secondary">Save Changes</button>
+          <button type="button" class="btn btn--danger" data-bs-toggle="modal" data-bs-target="#delete-account-dialog">Delete Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<app-confirm-delete-dialog
+  id="delete-property-dialog"
+  [hidden]="!propertyForDeletion"
+  [deleteWhat]="propertyForDeletion?.address"
+  (confirm)="deleteProperty(propertyForDeletion)">
+</app-confirm-delete-dialog>
+
+<app-confirm-delete-dialog
+  id="delete-license-dialog"
+  [hidden]="!licenseForDeletion"
+  [deleteWhat]="licenseForDeletion?.filename"
+  (confirm)="deleteLicense(licenseForDeletion)"
+></app-confirm-delete-dialog>
+
+<app-confirm-delete-dialog
+  id="delete-account-dialog"
+  [deleteWhat]="authService.getUsername()"
+  (confirm)="onDeleteAccount()">
+</app-confirm-delete-dialog>
+

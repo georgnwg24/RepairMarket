@@ -1,0 +1,58 @@
+<section class="form-page-section">
+  <div class="form-page-card">
+    <div class="form-page-card__body">
+      <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Action Failed</strong><br>
+        <span [innerHTML]="error"></span>
+        <button type="button" (click)="error = ''" class="btn-close" aria-label="Close"></button>
+      </div>
+
+      <h2 class="form-page-card__title">{{ formTitle }}</h2>
+
+      <form #form="ngForm" (ngSubmit)="onSubmit(form)" novalidate>
+        <div class="form-section">
+          <label for="price">Your Price (€)</label>
+          <input
+            [(ngModel)]="jobOffer.price"
+            class="form-control"
+            [class.is-invalid]="priceModel.invalid && (priceModel.touched || priceModel.dirty)"
+            id="price"
+            type="number"
+            name="price"
+            #priceModel="ngModel"
+            required
+            min="0"
+            max="999999999"
+            pattern="^\d+(\.\d{1,2})?$"
+          />
+          <div *ngIf="priceModel.invalid && (priceModel.touched || priceModel.dirty)" class="invalid-feedback">
+            <div *ngIf="priceModel.errors?.['required']">A price is required.</div>
+            <div *ngIf="priceModel.errors?.['min']">Price cannot be negative.</div>
+            <div *ngIf="priceModel.errors?.['max']">Price too high.</div>
+            <div *ngIf="priceModel.errors?.['pattern']">Price can have at most two decimal places.</div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label for="comment">Comment (Optional)</label>
+          <textarea
+            [(ngModel)]="jobOffer.comment"
+            class="form-control"
+            id="comment"
+            name="comment"
+            rows="5"
+            #commentModel="ngModel"
+            maxlength="4095">
+          </textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn--outline" (click)="goBack()">Cancel</button>
+          <button class="btn btn--secondary" type="submit">
+            {{ submitButtonText }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

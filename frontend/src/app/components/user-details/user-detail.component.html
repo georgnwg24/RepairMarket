@@ -1,0 +1,49 @@
+<section class="form-page-section">
+  <div class="form-page-card" style="max-width: 650px;">
+    <div class="form-page-card__body">
+      <h2 class="form-page-card__title">Profile Information</h2>
+
+      <ng-container *ngIf="user?.username === 'deleted user'; else profileContent">
+        <p class="text-muted">The account of this user was deleted.</p>
+      </ng-container>
+
+      <ng-template #profileContent>
+        <div class="detail-section">
+          <h4 class="section-title">Username: {{ user.username }}</h4>
+          <h4 class="section-title">Name: {{ user.firstName }} {{ user.lastName }}</h4>
+          <h4 class="section-title">Country: {{ user.countryCode }}</h4>
+          <h4 class="section-title">Postal Code: {{ user.postalCode }}</h4>
+          <h4 class="section-title">Area: {{ user.area }}</h4>
+        </div>
+
+        <div *ngIf="!modeIsCustomer" class="detail-section">
+          <label class="field-label">Licenses</label>
+          <ul class="detail-list">
+            <li class="detail-list__item" *ngFor="let license of licenses">
+              <a (click)="downloadFile(license)">{{ license.filename }}</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="detail-section">
+          <label class="field-label">User Reviews</label>
+          <div *ngIf="ratings.length > 0; else noReviews">
+            <div *ngIf="ratingStats" class="mb-2">
+              <span>Average: {{ ratingStats.average.toFixed(1) }} <i class="bi bi-star-fill text-warning"></i></span>
+              <span>(Total: {{ ratingStats.count }})</span>
+            </div>
+            <ul class="detail-list">
+              <li class="detail-list__item" *ngFor="let rating of ratings">
+                <span>{{ rating.comment || 'No comment' }}</span>
+                <span class="star-rating--small">
+                  <i class="bi" *ngFor="let star of [1,2,3,4,5]" [ngClass]="{ 'bi-star-fill text-warning': star <= rating.stars, 'bi-star': star > rating.stars }"></i>
+                </span>
+              </li>
+            </ul>
+          </div>
+          <ng-template #noReviews><p class="text-muted">No reviews yet.</p></ng-template>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</section>

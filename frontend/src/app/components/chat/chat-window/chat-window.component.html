@@ -1,0 +1,125 @@
+<div class="chat-window" [class.file-drop-overlay-active]="draggingFile">
+
+  @if(draggingFile) {
+    <div class="file-drop-overlay d-flex justify-content-center align-items-center">
+      <h1 class="text-white">Drag me in here</h1>
+    </div>
+  }
+
+  <div class="chat-messages-container">
+
+    @for (msg of messages; track msg.id) {
+    <app-chat-message-item
+    [msg]="msg"
+    [isMine]="msg.senderUsername === currentUsername"
+    [imageUrl]="imageUrls[msg.id]"
+    (edit)="openEditDialog($event)"
+    (delete)="openDeleteDialog($event)"
+    (report)="openReportDialog($event)"
+    ></app-chat-message-item>
+    } @empty {
+    <div class="p-2 text-center text-muted">
+      Write the first Message!
+    </div>
+    }
+  </div>
+
+
+  <!-- Writing box -->
+  <div class="text-muted d-flex justify-content-start align-items-center writing-box">
+    <div class="form-floating flex-fill">
+      <textarea
+        class="form-control"
+        style="resize: none"
+        id="writingBox"
+        placeholder="Type message"
+        [attr.maxLength]="messageMaxLength"
+        (keydown)="onMessageInputKeyDown($event)"
+        [(ngModel)]="messageText"
+      ></textarea>
+
+      <label for="writingBox">{{ messageMaxLength - messageText.length }} characters left</label>
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" accept="image/*,.pdf" #fileInput style="display: none" (change)="onFileSelected($event)" />
+    <a class="ms-3" style="cursor: pointer;" (click)="fileInput.click()">
+      <i class="bi bi-paperclip fs-2"></i>
+    </a>
+
+    <a class="ms-3" style="cursor: pointer;" (click)="sendMessage()">
+      <i class="bi bi-send fs-2"></i>
+    </a>
+  </div>
+
+  <!-- Edit -->
+  <p-dialog header="Edit Message" [(visible)]="displayEditDialog" position="top" [modal]="true" [style]="{width: '25rem'}">
+    <div class="p-fluid">
+      <span class="p-text-secondary block mb-8">New Message</span>
+      <textarea id="editMsg"
+                pInputTextarea
+                rows="4"
+                [(ngModel)]="editMessageText"
+                [maxlength]="messageMaxLength"
+                style="width:100%"></textarea>
+      <small>{{messageMaxLength - editMessageText.length}} characters left</small>
+    </div>
+    <div class="d-flex justify-content-end gap-2">
+      <p-button label="Cancel" severity="secondary" (click)="cancelEdit()" />
+      <p-button label="Save" (click)="confirmEdit()" />
+    </div>
+  </p-dialog>
+
+  <!-- Delete is a popup -->
+  <p-confirmdialog position="top"></p-confirmdialog>
+
+  <!-- Report -->
+  <p-dialog header="Report Message" [(visible)]="displayReportDialog" position="top" [modal]="true" [style]="{width: '25rem'}">
+    <div class="p-fluid">
+      <span class="p-text-secondary block mb-8">Reason of report</span>
+      <textarea id="reportMsg"
+                pInputTextarea
+                rows="4"
+                [(ngModel)]="reportMessageText"
+                [maxlength]="messageMaxLength"
+                style="width:100%"></textarea>
+      <small>{{messageMaxLength - reportMessageText.length}} characters left</small>
+    </div>
+    <div class="d-flex justify-content-end gap-2">
+      <p-button label="Cancel" severity="secondary" (click)="cancelReport()" />
+      <p-button label="Report" severity="danger" (click)="confirmReport()" />
+    </div>
+  </p-dialog>
+
+  <!-- Preview PDF or Images -->
+  <div class="modal fade" tabindex="-1"
+       [class.show]="showPreview"
+       [style.display]="showPreview ? 'block' : 'none'"
+       aria-labelledby="previewModalLabel"
+       [attr.aria-hidden]="!showPreview">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center position-relative">
+          <ng-container *ngIf="showPreview">
+            <ng-container *ngIf="previewImageUrl; else pdfViewer">
+              <img [src]="previewImageUrl" alt="Preview" class="img-fluid" style="max-height: 50vh;" />
+            </ng-container>
+            <ng-template #pdfViewer>
+              <pdf-viewer [src]="previewPdf" [show-all]="false" [show-borders]="false"
+                          [render-text]="false" [original-size]="false" [fit-to-page]="true"
+                          style="display: block; height: 50vh;">
+              </pdf-viewer>
+            </ng-template>
+          </ng-container>
+          <ng-container *ngIf="!showPreview">
+            <div id="no-image">No preview available.</div>
+          </ng-container>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="cancelPreview()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="confirmUpload()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

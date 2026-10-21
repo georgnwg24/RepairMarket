@@ -1,0 +1,40 @@
+<div class="chat-list">
+
+  <!-- Title -->
+  <div class="fs-3 text-start px-3 mb-3">Chats</div>
+
+  <div class="filter px-3 mb-2">
+    <!-- Filter Chats -->
+    <p-floatlabel variant="on">
+      <p-iconfield>
+        <p-inputicon class="pi pi-search" />
+        <input pInputText id="filterChats" [(ngModel)]="currentFilterTerm" />
+      </p-iconfield>
+      <label for="filterChats">Search</label>
+    </p-floatlabel>
+  </div>
+
+  <!-- Userlist -->
+  <div class="d-flex flex-grow-1 flex-column">
+    <!-- list items -->
+    @for (chat of filteredChats; track chat.id) {
+    <app-chat-list-item
+    [chat]="chat"
+    [selected]="chat.id === selectedChatId"
+    (selectChat)="selectChat.emit($event)"
+    (deleteChat)="deleteChat.emit($event)"
+    ></app-chat-list-item>
+    } @empty {
+    <div class="text-center text-muted p-2">
+      No chats available.
+    </div>
+    }
+  </div>
+
+</div>
+
+
+
+
+
+

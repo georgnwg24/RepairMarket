@@ -1,0 +1,69 @@
+<div class="table-container">
+  <h2>Your Sent Offers</h2>
+
+  <div *ngIf="loading">Loading...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="table-card">
+    <table class="table table-hover">
+      <thead *ngIf="jobOfferPage.content.length > 0">
+      <tr>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Your Offer</th>
+        <th>Lowest Offer</th>
+        <th class="min-width">Actions</th>
+      </tr>
+      </thead>
+      <tbody *ngIf="jobOfferPage.content.length === 0 && !loading">
+      <tr><td colspan="5" class="text-center p-4">No sent job offers found.</td></tr>
+      </tbody>
+      <tbody>
+        @for (offer of jobOfferPage.content; track offer.id) {
+          <tr [ngClass]="getRowClass(offer.status)">
+            <td data-label="Title">
+              <a [routerLink]="['/worker', 'requests', offer.jobRequestId, 'details']">
+                {{ offer.requestTitle }}
+              </a>
+            </td>
+            <td data-label="Status">{{ offer.status | lowercase }}</td>
+            <td data-label="Your Offer">{{ offer.price | currency:'EUR':'symbol':'1.2-2' }}</td>
+            <td data-label="Lowest Offer">{{ offer.lowestPrice === 0 ? '-' : offer.lowestPrice | currency:'EUR':'symbol':'1.2-2' }}</td>
+            <td data-label="Actions">
+              <div class="btn-group">
+                <button *ngIf="isWithdrawable(offer.status)" class="btn btn--secondary btn--sm" [routerLink]="['/worker', 'offers', offer.id, 'edit']">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button *ngIf="isWithdrawable(offer.status)" class="btn btn--warning btn--sm" (click)="offerForWithdrawal = offer" data-bs-toggle="modal" data-bs-target="#withdraw-offer-dialog">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+                <button *ngIf="offer.status === 'DONE'" class="btn btn--warning btn--sm" [routerLink]="['/worker', 'rating', offer.jobRequestId]">
+                  <i class="bi bi-star-fill"></i>
+                </button>
+                <button *ngIf="isDeletable(offer.status)" class="btn btn--danger btn--sm" (click)="offerForDeletion = offer" data-bs-toggle="modal" data-bs-target="#delete-offer-dialog">
+                  <i class="bi bi-trash"></i>
+                </button>
+                <button *ngIf="offer.status === 'ACCEPTED'" class="btn btn--primary btn--sm" (click)="openChat(offer.jobRequestId)">
+                  <i class="bi bi-chat-dots"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-confirm-withdraw-dialog id="withdraw-offer-dialog" [hidden]="!offerForWithdrawal" [withdrawWhat]="'your offer for ' + offerForWithdrawal?.requestTitle" (confirm)="withdrawOffer(offerForWithdrawal?.id)"></app-confirm-withdraw-dialog>
+  <app-confirm-delete-dialog id="delete-offer-dialog" [hidden]="!offerForDeletion" [deleteWhat]="offerForDeletion?.requestTitle" (confirm)="deleteOffer(offerForDeletion?.id)"></app-confirm-delete-dialog>
+</div>
+@if (jobOfferPage.content.length > 0){
+  <p-paginator
+    (onPageChange)="onPageChange($event)"
+    [first]="jobOfferPage.offset"
+    [rows]="jobOfferPage.pageSize"
+    [totalRecords]="jobOfferPage.totalElements"
+    [rowsPerPageOptions]="[10, 20, 30]"
+  />
+}
+

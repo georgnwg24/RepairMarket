@@ -1,0 +1,77 @@
+<section class="edit-license-section ">
+  <div class="edit-license-container">
+    <div class="edit-license-row">
+      <div class="edit-license-column">
+        <div class="edit-license-card">
+          <div class="edit-license-card-body">
+            <h3 class="edit-license-title">License Information</h3>
+            <form [formGroup]="licenseForm" (ngSubmit)="onSubmit()">
+              <div class="input-field">
+                <label for="filename">Filename</label>
+                <input type="text" id="filename" formControlName="filename" class="form-input"/>
+                <div *ngIf="submitted && form.filename.errors" class="text-danger">
+                  <div *ngIf="form.filename.errors['required']">Filename is required.</div>
+                  <div *ngIf="form.filename.errors['maxlength']">Filename must be at most 255 characters.</div>
+                </div>
+              </div>
+              <div class="input-field">
+                <label for="description">Description (Optional)</label>
+                <input type="text" id="description" formControlName="description" class="form-input"/>
+                <div *ngIf="submitted && form.description.errors" class="text-danger">
+                  <div *ngIf="form.description.errors['maxlength']">Description must be at most 4095 characters.</div>
+                </div>
+              </div>
+              <div class="input-field">
+                <label for="licenseFile" class="form-label">Upload License</label>
+                <input
+                  type="file"
+                  id="licenseFile"
+                  (change)="onFileSelected($event)"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  class="form-control"
+                  #fileInput
+                />
+                <div
+                  class="upload-drop-zone border border-2 rounded mt-3 p-4 text-center"
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="onDragLeave($event)"
+                  (drop)="onFileDrop($event)"
+                  [class.drop-zone-hover]="isDropZoneHovered"
+                  style="min-height: 100px;"
+                >
+                  <div *ngIf="!selectedFile">Drag and drop your file here</div>
+                  <div *ngIf="selectedFile"><strong>Uploaded File:</strong>
+                    <div *ngIf="selectedFileUrl" class="mt-2">
+                      <a
+                        [href]="selectedFileUrl"
+                        [download]="selectedFile?.name"
+                        class="text-primary text-decoration-underline"
+                        style="cursor: pointer;"
+                      >
+                        <div>{{ selectedFile?.name }}</div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="submitted && error && errorMessage" class="text-danger mt-2">
+                  {{ errorMessage }}
+                </div>
+                <div *ngIf="selectedFile" class="d-flex align-items-center gap-2">
+                  <a type="button" class="text-danger text-decoration-underline" style="cursor: pointer;" (click)="removeSelectedFile()">
+                    Remove
+                  </a>
+                </div>
+              </div>
+              <div class="form-button-container">
+                <button type="button" class="form-back-btn" routerLink="/worker/edit">
+                  Cancel
+                </button>
+                <button type="submit" class="form-submit-btn" [disabled]="licenseForm.invalid && submitted">{{submitButtonText}}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

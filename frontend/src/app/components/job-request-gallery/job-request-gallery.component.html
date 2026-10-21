@@ -1,0 +1,173 @@
+<div class="page-layout">
+  <div class="sidebar-column" [class.is-open]="isFilterSidebarOpen">
+    <app-search [mode]="mode" [properties]="customerProperties" [initialSearch]="searchParametersFromRoute" (searchChange)="onSearchCriteriaChanged($event)"></app-search>
+  </div>
+  <div class="sidebar-overlay" [class.is-active]="isFilterSidebarOpen" (click)="toggleFilterSidebar()"></div>
+
+  <div class="content-column">
+    <div class="page-header">
+      <h2 [ngSwitch]="mode">
+        <span *ngSwitchCase="'admin'">All Job Requests</span>
+        <span *ngSwitchCase="'customer'">My Job Requests</span>
+        <span *ngSwitchCase="'worker'">Find Jobs</span>
+      </h2>
+      <div class="page-actions">
+        <button class="btn btn--primary d-lg-none" (click)="toggleFilterSidebar()">
+          <i class="bi bi-funnel-fill"></i>
+        </button>
+        <a *ngIf="mode === 'customer'" class="btn btn--primary" routerLink="/customer/requests/create">
+          <i class="bi bi-plus-lg"></i> New Job
+        </a>
+      </div>
+    </div>
+
+    <div *ngIf="mode === 'worker' && licenseApproved === false" class="alert alert-warning">
+      Your license is not approved. You cannot view job requests.
+    </div>
+
+    <div *ngIf="loading" class="text-center my-4">
+      <div class="spinner-border" role="status"></div>
+    </div>
+    <div *ngIf="!loading && jobRequestPage.content.length === 0" class="empty-state">
+      No job requests found.
+    </div>
+
+    @for (job of jobRequestPage.content; track job.id) {
+      <div class="job-and-offers-container"
+           [class.is-clickable]="mode === 'customer'"
+           [class.selected]="mode === 'customer' && selectedJobId === job.id"
+           (click)="toggleJobOffers(job.id!)">
+
+        <app-job-card [job]="enhancedJobData(job)" [mode]="mode"
+                      (delete)="onDeleteJob($event)"
+                      (edit)="onEditJob($event)"
+                      (viewDetails)="onViewDetails($event)"
+                      (createOffer)="onCreateOffer($event)"
+                      (report)="onReport($event)">
+        </app-job-card>
+
+        <div class="offers-section"
+             [class.is-expanded]="mode === 'customer' && selectedJobId === job.id && offersMap[job.id!]?.length">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+              <tr>
+                <th>Worker</th>
+                <th>Price</th>
+                <th>Comment</th>
+                <th>Action</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr
+                *ngFor="let offer of offersMap[job.id!]"
+                [ngClass]="{
+                'table-row-success': job.status === 'ACCEPTED',
+                'table-dark': job.status === 'DONE'
+              }">
+                <td>
+                  <div>
+                  <a [routerLink]="['/profile','worker', offer.workerId]">{{ offer.workerUsername }}</a>
+                  </div>
+                  <span *ngIf="offer.workerUsername !== 'deleted user' && offer.workerAverageRating !== undefined && offer.workerAverageRating !== null && offer.workerAverageRating > 0">
+          ({{ offer.workerAverageRating.toFixed(1) }} <i class="bi bi-star-fill text-warning"></i>)
+        </span>
+                </td>
+                <td>{{ offer.price | currency:'EUR':'symbol':'1.2-2' }}</td>
+                <td>{{ offer.comment }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <ng-container [ngSwitch]="job.status">
+                    <button
+                      *ngSwitchCase="'PENDING'"
+                      class="btn btn--success btn--sm"
+                      (click)="acceptOffer(offer)"
+                    >Accept</button>
+
+                    <ng-container *ngSwitchCase="'ACCEPTED'">
+                      <button
+                        class="btn btn--primary btn--sm me-2"
+                        (click)="openChat(job.id!)"
+                      >Open Chat</button>
+                      <button
+                        class="btn btn--warning btn--sm"
+                        (click)="requestDone(job.id!)"
+                      >Mark as Done</button>
+                    </ng-container>
+
+                    <button
+                      *ngSwitchCase="'DONE'"
+                      class="btn btn--warning btn--sm"
+                      [routerLink]="['/customer/rating', job.id]"
+                    >Rate Worker</button>
+                  </ng-container>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    }
+    @if (jobRequestPage.content.length > 0){
+      <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="jobRequestPage.offset"
+        [rows]="jobRequestPage.pageSize"
+        [totalRecords]="jobRequestPage.totalElements"
+        [rowsPerPageOptions]="[10, 20, 30]"
+      />
+    }
+  </div>
+
+</div>
+<app-confirm-delete-dialog *ngIf="mode !== 'worker'"
+                           id="delete-dialog"
+                           [hidden]="!jobForDeletion"
+                           [deleteWhat]="jobForDeletion?.title"
+                           (confirm)="deleteJob(jobForDeletion)">
+</app-confirm-delete-dialog>
+
+<app-report-dialog *ngIf="mode === 'worker'"
+  id="report-dialog"
+  [reportWhat]="jobForReport?.title"
+  (confirm)="onReportConfirm($event)"
+></app-report-dialog>
+
+<div class="modal fade" id="no-properties-modal" tabindex="-1" aria-labelledby="noPropertiesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="noPropertiesModalLabel">Property Required</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>You must add a property to your profile before you can create a job request.</p>
+        <p>Please add a property to continue.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn--outline-secondary" data-bs-dismiss="modal">Close</button>
+        <a routerLink="/customer/address/create" class="btn btn--primary" data-bs-dismiss="modal">Add Property</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="no-licenses-modal" tabindex="-1" aria-labelledby="noLicensesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="noLicensesModalLabel">License Required</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>You must add a license to your profile before you can view job requests.</p>
+        <p>Please add a license to continue.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn--outline-secondary" data-bs-dismiss="modal">Close</button>
+        <a routerLink="/worker/license/create" class="btn btn--primary" data-bs-dismiss="modal">Add License</a>
+      </div>
+    </div>
+  </div>
+</div>

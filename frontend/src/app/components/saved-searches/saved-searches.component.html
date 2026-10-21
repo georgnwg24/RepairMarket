@@ -1,0 +1,61 @@
+<div class="table-container">
+  <h2>Your Saved Searches</h2>
+
+  <div *ngIf="loading">Loading...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="table-card" *ngIf="searchAlerts.length > 0">
+    <table class="table table-hover">
+      <thead>
+      <tr>
+        <th>Keywords</th>
+        <th>Categories</th>
+        <th>Max Distance</th>
+        <th class="min-width">New Results</th>
+        <th class="min-width">Push active</th>
+        <th class="min-width">Delete</th>
+      </tr>
+      </thead>
+      <tbody>
+        @for ( alert of searchAlerts; track alert.id ) {
+          <tr (click)="openSearch(alert)" style="cursor: pointer">
+            <td>{{ alert.keywords || '-' }}</td>
+            <td>
+              <span *ngIf="alert.categories?.length === 0">All</span>
+              <span *ngIf="alert.categories?.length > 0 && alert.categories?.length <= 3">{{ alert.categories?.join(', ') | titlecase }}</span>
+              <span *ngIf="alert.categories?.length > 3" [title]="alert.categories?.join(', ') | titlecase">
+                {{ alert.categories?.slice(0, 3).join(', ') | titlecase }}, ...
+              </span>
+            </td>
+            <td>{{ alert.maxDistance || '∞' }} km</td>
+            <td>{{ alert.count }}</td>
+            <td (click)="$event.stopPropagation()">
+              <div class="btn-group">
+                <mat-slide-toggle
+                  [checked]="alert.active"
+                  (change)="toggleAlert(alert)"
+                  color="primary">
+                </mat-slide-toggle>
+              </div>
+            </td>
+            <td (click)="$event.stopPropagation()">
+              <div class="btn-group">
+                <button
+                  class="btn btn--danger btn--sm"
+                  (click)="deleteAlert(alert.id)"
+                  aria-label="Delete Alert">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && searchAlerts.length === 0" class="alert alert-info">
+    Save your first search on the main page and get Notifications for new job requests!
+  </div>
+</div>

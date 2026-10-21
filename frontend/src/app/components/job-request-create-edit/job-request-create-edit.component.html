@@ -1,0 +1,155 @@
+<div class="form-page-section">
+  <div class="form-page-card">
+    <div class="form-page-card__body">
+      <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Action Failed</strong><br>
+        <span [innerHTML]="errorMessage"></span>
+        <button type="button" (click)="error = false" class="btn-close" aria-label="Close"></button>
+      </div>
+
+      <h2 class="form-page-card__title">{{ isEditMode ? 'Edit Job Request' : 'Create Job Request' }}</h2>
+
+      <form #form="ngForm" (ngSubmit)="onSubmit(form)">
+
+        <div class="mb-3">
+          <label for="title" class="form-label">Title</label>
+          <input
+            [(ngModel)]="jobRequest.title"
+            [class]="dynamicCssClassesForInput(jobTitleModel)"
+            class="form-control"
+            id="title"
+            type="text"
+            name="job-title"
+            #jobTitleModel="ngModel"
+            required/>
+          <div class="invalid-feedback" *ngIf="jobTitleModel.invalid && (jobTitleModel.dirty || jobTitleModel.touched)">
+            <div *ngIf="jobTitleModel.errors?.['required']">Title is required.</div>
+            <div *ngIf="jobTitleModel.errors?.['serverError']">{{ jobTitleModel.errors['serverError'] }}</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="jobDeadline" class="form-label">Deadline</label>
+          <input
+            type="date"
+            id="jobDeadline"
+            name="jobDeadline"
+            class="form-control"
+            [class]="dynamicCssClassesForInput(jobDeadlineModel)"
+            [(ngModel)]="deadlineText"
+            #jobDeadlineModel="ngModel"
+            [min]="minDate"
+            max="9999-12-31"
+            required/>
+          <div class="invalid-feedback" *ngIf="jobDeadlineModel.invalid && (jobDeadlineModel.dirty || jobDeadlineModel.touched)">
+            <div *ngIf="jobDeadlineModel.errors?.['required']">Deadline is required.</div>
+            <div *ngIf="jobDeadlineModel.errors?.['min']">Deadline must be a future date.</div>
+            <div *ngIf="jobDeadlineModel.errors?.['serverError']">{{ jobDeadlineModel.errors['serverError'] }}</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="property" class="form-label">Property</label>
+          <select class="form-select" id="property" name="property" [(ngModel)]="jobRequest.propertyId"
+                  #propertyModel="ngModel" [class]="dynamicCssClassesForInput(propertyModel)" required>
+            <option [ngValue]="null" disabled>Select a property...</option>
+            <option *ngFor="let property of properties" [value]="property.id">{{ property.address }}</option>
+          </select>
+          <div class="invalid-feedback" *ngIf="propertyModel.invalid && (propertyModel.dirty || propertyModel.touched)">
+            <div *ngIf="propertyModel.errors?.['required']">A property must be selected.</div>
+            <div *ngIf="propertyModel.errors?.['serverError']">{{ propertyModel.errors['serverError'] }}</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="category" class="form-label">Category</label>
+          <select class="form-select" id="category" name="category" [(ngModel)]="jobRequest.category"
+                  #categoryModel="ngModel" [class]="dynamicCssClassesForInput(categoryModel)" required>
+            <option [ngValue]="null" disabled>Select a category...</option>
+            <option *ngFor="let key of categoryKeys" [value]="jobCategories[key]">{{ jobCategories[key] | titlecase }}</option>
+          </select>
+          <div class="invalid-feedback" *ngIf="categoryModel.invalid && (categoryModel.dirty || categoryModel.touched)">
+            <div *ngIf="categoryModel.errors?.['required']">A category must be selected.</div>
+            <div *ngIf="categoryModel.errors?.['serverError']">{{ categoryModel.errors['serverError'] }}</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="description" class="form-label">Description</label>
+          <textarea
+            class="form-control"
+            id="description"
+            name="description"
+            rows="5"
+            #descriptionModel="ngModel"
+            [class]="dynamicCssClassesForInput(descriptionModel)"
+            [(ngModel)]="jobRequest.description"
+            maxlength="4095"></textarea>
+          <div class="invalid-feedback" *ngIf="descriptionModel.invalid && (descriptionModel.dirty || descriptionModel.touched)">
+            <div *ngIf="descriptionModel.errors?.['serverError']">{{ descriptionModel.errors['serverError'] }}</div>
+          </div>
+        </div>
+
+        <div class="image-management-section mt-4 mb-4">
+          <label>Images (max {{MAX_IMAGES}}, JPEG/PNG, 5MB each)</label>
+          <input
+            type="file"
+            multiple
+            accept="image/jpeg, image/png"
+            (change)="onFileSelect($event)"
+            [disabled]="galleryItems.length >= MAX_IMAGES"
+            class="form-control mt-2"
+          >
+          <div *ngIf="galleryItems.length >= MAX_IMAGES" class="text-warning">
+            Maximum {{MAX_IMAGES}} images allowed
+          </div>
+
+          <div class="mt-3">
+            <p-galleria #galleria
+                        [(value)]="galleryItems"
+                        [responsiveOptions]="responsiveOptions"
+                        [containerStyle]="{'max-width': '100%'}"
+                        [numVisible]="5"
+                        [showItemNavigators]="true"
+                        [showThumbnailNavigators]="false"
+                        [circular]="true"
+                        [activeIndex]="activeIndex"
+                        (activeIndexChange)="onActiveIndexChange($event)">
+              <ng-template pTemplate="item" let-item>
+                <div class="galleria-item-container">
+                  <img [src]="item.src" [alt]="item.alt" class="galleria-main-image" />
+                </div>
+              </ng-template>
+              <ng-template pTemplate="thumbnail" let-item>
+                <div class="thumbnail-wrapper">
+                  <img [src]="item.thumbnail" [alt]="item.alt" class="thumbnail-image" />
+                  <button type="button" class="btn btn-danger btn-sm delete-btn"
+                          (click)="removeImage(item); $event.preventDefault(); $event.stopPropagation();">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </ng-template>
+            </p-galleria>
+            <div *ngIf="galleryItems.length === 0" class="text-muted mt-2">
+              No images added yet. Upload images to see previews here.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="btn btn--outline"
+            type="button"
+            routerLink="/customer/requests">
+            Cancel
+          </button>
+          <button
+            class="btn btn--secondary"
+            type="submit">
+            {{submitButtonText}}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

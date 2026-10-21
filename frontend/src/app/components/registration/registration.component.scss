@@ -1,0 +1,46 @@
+// --- Role Selection Styles ---
+.role-options {
+  display: flex;
+  gap: 10px;
+}
+
+.role-option {
+  flex: 1;
+}
+
+.role-radio {
+  opacity: 0;
+  position: fixed;
+  width: 0;
+}
+
+.role-option-label {
+  display: block;
+  padding: 10px;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.role-radio:checked + .role-option-label {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  color: white;
+}
+
+// --- Worker-specific field container ---
+.worker-fields-container {
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

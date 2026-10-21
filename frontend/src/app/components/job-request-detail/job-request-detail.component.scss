@@ -1,0 +1,128 @@
+
+.content-card {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+}
+
+.page-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+
+  &__title {
+    font-size: 2.25rem;
+    line-height: 1.2;
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.4em 0.8em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--white);
+  background-color: var(--secondary-color);
+
+  &--success { background-color: var(--success-color); }
+  &--warning { background-color: var(--warning-color); color: var(--dark-color); }
+  &--info { background-color: var(--info-color); color: var(--dark-color); }
+  &--danger { background-color: var(--danger-color); }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.info-box {
+  &__label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--text-color-muted);
+    text-transform: uppercase;
+  }
+
+  &__value {
+    font-size: 1.1rem;
+    font-weight: 500;
+    word-wrap: break-word;
+
+    &.price {
+      font-weight: 600;
+      color: var(--success-color);
+    }
+  }
+}
+
+.detail-block {
+  margin-top: 2rem;
+
+  label {
+    @extend .info-box__label;
+  }
+}
+
+.description-text {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  line-height: 1.7;
+  color: var(--text-color);
+  background-color: var(--body-bg);
+  padding: 1rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+}
+
+.page-actions__group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.action-buttons {
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &__group {
+    display: flex;
+    gap: 0.75rem;
+  }
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.alert-info {
+  color: #055160;
+  background-color: #cff4fc;
+  border-color: #b6effb;
+}
+
+:host ::ng-deep {
+  app-area-finder {
+    select,
+    input {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: none;
+    }
+  }
+}
+

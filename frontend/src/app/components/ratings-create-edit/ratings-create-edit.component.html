@@ -1,0 +1,48 @@
+<section class="form-page-section">
+  <div class="form-page-card" style="max-width: 650px;">
+    <div class="form-page-card__body"> <h2 class="form-page-card__title">Write a Review</h2> <form [formGroup]="ratingForm" (ngSubmit)="onSubmit()">
+      <div class="form-section">
+        <label for="stars">Your Rating</label>
+        <div id="stars" class="star-rating"> <ng-container *ngFor="let star of stars; let i = index">
+          <i
+            class="bi"
+            [ngClass]="{
+                      'bi-star': i + 1 > ratingForm.get('stars')?.value,
+                      'bi-star-fill': i + 1 <= ratingForm.get('stars')?.value,
+                      'text-warning': i + 1 <= (hovered || ratingForm.get('stars')?.value)
+                    }"
+            (mouseenter)="hovered = i + 1"
+            (mouseleave)="hovered = 0"
+            (click)="ratingForm.patchValue({stars: i + 1}); hovered = 0">
+          </i>
+        </ng-container>
+        </div>
+        <div *ngIf="ratingForm.get('stars')?.invalid && ratingForm.get('stars')?.touched" class="invalid-feedback d-block">
+          Rating is required.
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="comment">Comment</label>
+        <textarea
+          id="comment"
+          formControlName="comment"
+          class="form-control"
+          rows="5"
+          placeholder="Tell us about your experience..."
+          maxlength="1023">
+              </textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--outline" (click)="cancel()"> Cancel
+        </button>
+        <button type="submit" class="btn btn--primary" [disabled]="ratingForm.invalid"> {{submitButtonText}}
+        </button>
+      </div>
+
+    </form>
+
+    </div>
+  </div>
+</section>

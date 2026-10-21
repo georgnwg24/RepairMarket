@@ -1,0 +1,50 @@
+<div [ngClass]="{'my-message' : isMine, 'others-message': !isMine}">
+
+  <div #msgContent class="message-content">
+
+    @if (msg.messageType === MessageType.TEXT) {
+      <div class="rounded-3 message-body">{{ msg.message }}</div>
+
+    } @else if (msg.mediaUrl.endsWith(".pdf")) {
+
+      <div class="pdf">
+        <a
+          [href]="imageUrl"
+          download="{{ msg.mediaName }}"
+          class="d-block"
+        >{{ msg.mediaName }} <i class="bi bi-cloud-download"></i>
+        </a>
+      </div>
+
+    } @else {
+      <img [src]="imageUrl" [alt]="msg.mediaName" [width]="400" [height]="400" class="img-fluid rounded-3"/>
+    }
+
+    <p-button
+      type="button"
+      icon="pi pi-ellipsis-h"
+      [text]="true"
+      [rounded]="true"
+      size="small"
+      styleClass="ellipsis-btn-compact message-actions-button"
+      (click)="openOptions($event)"
+      aria-label="Options"
+    ></p-button>
+
+    <p-popover #optionsPopover [dismissable]="true" (onHide)="onPopoverHide()" styleClass="p-overlay-rounded">
+      <p-menu [model]="actions"></p-menu>
+    </p-popover>
+
+  </div>
+
+  <div class="message-meta small text-muted">
+
+    @if (msg.edited){Edited} {{chatMessageFormatted(msg.timestamp)}}
+    @if(isMine){<i class="bi bi-rocket-takeoff-fill"
+       [class.text-success]="msg.read"
+       [class.text-secondary]="!msg.read"
+    ></i>}
+
+  </div>
+
+</div>

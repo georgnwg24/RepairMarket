@@ -1,0 +1,97 @@
+.my-message, .others-message {
+  display: flex;
+  align-items: flex-start;
+  width: fit-content;
+  max-width: 60%;
+  gap: 0.2rem;
+
+}
+
+.my-message {
+  margin-right: 0;
+  margin-left: auto;
+  flex-direction: column;
+  align-items: end;
+
+  .message-content {
+    position: relative;
+    color: whitesmoke;
+    background-color: #003049;
+    min-width: 1.5rem;
+  }
+
+  .pdf > a {
+    color: #4AACFD;
+  }
+}
+
+.others-message {
+  margin-right: auto;
+  margin-left: 0;
+  flex-direction: column;
+
+  .message-content {
+    position: relative;
+    background-color: #E5E5EA;
+    color: #000000;
+    min-width: 1.5rem;
+  }
+
+  .pdf > a {
+    color: #2f2fff;
+    text-decoration: underline;
+  }
+}
+
+.message-content {
+  border-radius: 0.5rem;
+  padding: 0.3rem;
+}
+
+.message-body,
+.pdf {
+  word-break: break-word;
+  white-space: pre-wrap;
+  display: inline-block;
+}
+
+
+.message-actions-button {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.my-message .message-container:hover .message-actions-button {
+  visibility: visible;
+  opacity: 1;
+}
+
+:host ::ng-deep .ellipsis-btn-compact {
+  /* Controls the width & height when you’ve got icon-only buttons */
+  --p-button-icon-only-width: 1rem;
+  /* When you also use size="small" */
+  --p-button-sm-icon-only-width: 1rem;
+
+  /* Shrink the icon itself a bit if you like */
+  --p-button-icon-size: 0.75rem;
+}
+
+:host ::ng-deep .message-actions-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s;
+
+  color: #faffb6;
+  background-color: #4080bd;
+}
+
+:host ::ng-deep .message-content:hover .message-actions-button {
+  visibility: visible;
+  opacity: 1;
+}

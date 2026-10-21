@@ -1,0 +1,40 @@
+<div class="chat-item d-flex align-items-start p-2 pointer hover-bg transition-all"
+  (click)="selectChat.emit(chat.id)" [class.selected]="selected"
+>
+
+  <div class="flex-grow-1 overflow-hidden justify-content-between">
+    <div class="d-block text-truncate item-title">{{ chat.jobRequestTitle }}</div>
+    <div class="d-block text-truncate small">{{ chat.counterPartName }}</div>
+
+    <p class="small text-muted mb-0 text-truncate">
+      {{chat.lastMessageOfCounterpart}}
+    </p>
+  </div>
+
+
+
+  <div class="chat-meta text-end text-nowrap">
+    <small class="text-muted">{{ chatPreviewFormatted(chat.lastMessageOfCounterpartTime) }}</small>
+    @if (chat.numberOfUnreadMessages) {
+    <div>
+      <p-badge
+        [value]="chat.numberOfUnreadMessages > 9  ? '9+' : chat.numberOfUnreadMessages"
+        severity="danger"
+      />
+    </div>
+    }
+  </div>
+
+  <p-confirmPopup></p-confirmPopup>
+  <p-toast></p-toast>
+  <div class="chat-actions">
+    <p-button
+      (onClick)="confirmDelete($event)"
+      icon="pi pi-trash"
+      [outlined]="true"
+      severity="danger"
+      class="trash-button"
+    ></p-button>
+  </div>
+
+</div>

@@ -1,0 +1,73 @@
+<div class="table-container">
+  <h2>Users</h2>
+
+  <div class="search-wrapper" style="margin-bottom: 1rem;">
+    <input
+    type="text"
+    [formControl]="searchControl"
+    placeholder="Search users by username…"
+    class="form-control"
+    />
+  </div>
+
+  <div class="table-card">
+    <div *ngIf="bannerError" class="alert alert-danger" role="alert">{{ bannerError }}</div>
+    <table class="table table-hover">
+      <thead *ngIf="usersPage.content.length > 0;">
+      <tr>
+        <th>User</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Area</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngIf="loading">
+        <td colspan="6" class="text-center p-4">Loading users...</td>
+      </tr>
+      <tr *ngFor="let user of usersPage.content; trackBy: trackById">
+        <td data-label="User">{{ user.username }}</td>
+        <td data-label="Email">{{ user.email }}</td>
+        <td data-label="Role">{{ user.role }}</td>
+        <td data-label="First Name">{{ user.firstName || '' }}</td>
+        <td data-label="Last Name">{{ user.lastName || '' }}</td>
+        <td data-label="Area">{{ user.area || '' }}</td>
+        <td data-label="Active">
+            <span [ngClass]="user.banned ? 'badge bg-danger' : 'badge bg-success'">
+              {{ user.banned ? 'Banned' : 'Active' }}
+            </span>
+        </td>
+        <td data-label="Actions">
+          <button class="btn btn--sm"
+                  [ngClass]="user.banned ? 'btn--warning' : 'btn--danger'"
+                  (click)="confirmBan(user)"
+                  data-bs-toggle="modal"
+                  data-bs-target="#confirm-ban-dialog">
+            <i [ngClass]="user.banned ? 'bi bi-unlock' : 'bi bi-lock'"></i>
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="!loading && !bannerError && usersPage.content.length === 0">
+        <td colspan="8" class="text-center p-4">No users found.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  @if (usersPage.content.length > 0){
+    <div class="card flex justify-center">
+      <p-paginator (onPageChange)="onPageChange($event)" [first]="usersPage.offset" [rows]="usersPage.pageSize" [totalRecords]="usersPage.totalElements" [rowsPerPageOptions]="[10, 20, 30]" />
+    </div>
+  }
+</div>
+
+<app-confirm-ban-dialog
+  #confirmBanDialog
+  id="confirm-ban-dialog"
+  [banWhat]="selectedUserForBan?.username"
+  [isBanned]="selectedUserForBan?.banned"
+  (confirm)="onBanConfirm()">
+</app-confirm-ban-dialog>

@@ -1,0 +1,143 @@
+<div class="content-card">
+  <div *ngIf="!jobRequest" class="alert alert-info">Loading job request details...</div>
+
+  <ng-container *ngIf="jobRequest">
+    <div class="page-header">
+      <h2 class="page-header__title">{{ jobRequest.title }}</h2>
+      <div [ngSwitch]="jobRequest.status">
+        <span *ngSwitchCase="'PENDING'" class="badge badge--warning">Pending</span>
+        <span *ngSwitchCase="'ACCEPTED'" class="badge badge--success">Accepted</span>
+        <span *ngSwitchCase="'DONE'" class="badge badge--info">Done</span>
+        <span *ngSwitchDefault class="badge">{{ formatDisplayString(jobRequest.status) }}</span>
+      </div>
+    </div>
+
+    <div class="details-grid">
+      <div class="info-box">
+        <label class="info-box__label">Customer</label>
+        <div class="info-box__value">
+          <a [routerLink]="['/profile','customer', jobRequest.customerId]">{{ jobRequest.customerUsername }}</a>
+        </div>
+      </div>
+      <div class="info-box">
+        <label class="info-box__label">Deadline</label>
+        <div class="info-box__value">{{ formatDate(jobRequest.deadline) }}</div>
+      </div>
+      <div class="info-box">
+        <label class="info-box__label">Category</label>
+        <div class="info-box__value">{{ formatDisplayString(jobRequest.category) }}</div>
+      </div>
+      <div class="info-box">
+        <label class="info-box__label">Lowest Offer</label>
+        <div class="info-box__value price">
+          {{ lowestOfferPrice !== null ? (lowestOfferPrice | currency:'EUR':'symbol':'1.2-2') : 'No offers yet' }}
+        </div>
+      </div>
+
+      <ng-container *ngIf="property">
+        <div class="info-box">
+          <label class="info-box__label">Country</label>
+          <div class="info-box__value">{{ getCountryName(property.countryCode) }}</div>
+        </div>
+        <div class="info-box">
+          <label class="info-box__label">Postal Code</label>
+          <div class="info-box__value">{{ property.postalCode }}</div>
+        </div>
+        <div class="info-box">
+          <label class="info-box__label">Area / City</label>
+          <div class="info-box__value">{{ property.area }}</div>
+        </div>
+        <div class="info-box">
+          <label class="info-box__label">Address</label>
+          <div class="info-box__value">{{ property.address }}</div>
+        </div>
+      </ng-container>
+
+      <div *ngIf="propertyLoading" class="alert alert-info">Loading property details...</div>
+    </div>
+
+    <div class="detail-block">
+      <label class="info-box__label">Description</label>
+      <p class="description-text">{{ jobRequest.description || 'No description provided.' }}</p>
+    </div>
+
+    <div class="detail-block">
+      <label class="info-box__label">Attached Images</label>
+      <p-galleria *ngIf="galleryItems.length > 0"
+                  #galleria
+                  [(value)]="galleryItems"
+                  [responsiveOptions]="responsiveOptions"
+                  [containerStyle]="{'max-width': '100%', 'margin-top': '1rem'}"
+                  [numVisible]="5"
+                  [showItemNavigators]="true"
+                  [showThumbnailNavigators]="false"
+                  [circular]="true"
+                  [(activeIndex)]="activeIndex">
+        <ng-template pTemplate="item" let-item>
+          <img [src]="item.src" [alt]="item.alt" style="width: 100%; display: block;" />
+        </ng-template>
+        <ng-template pTemplate="thumbnail" let-item>
+          <div class="p-galleria-thumbnail-content">
+            <img [src]="item.thumbnail" [alt]="item.alt" />
+          </div>
+        </ng-template>
+      </p-galleria>
+
+      <div *ngIf="imagesLoaded && galleryItems.length === 0" class="empty-state">
+        <i class="pi pi-image" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+        <p>No images were attached to this job request.</p>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn--outline" (click)="goBack()">
+        Back
+      </button>
+
+      <div class="action-buttons__group">
+        <div class="btn-group" *ngIf="mode === 'WORKER'">
+          <div *ngIf="jobRequest.status==='PENDING'">
+            <button class="btn btn--success" (click)="onCreateOfferClick()">
+              <i class="bi bi-plus"></i> Create Offer
+            </button>
+          </div>
+          <button class="btn btn--danger" (click)="onReportClick()">
+            <i class="bi bi-flag"></i> Report
+          </button>
+        </div>
+
+        <div class="btn-group" *ngIf="mode === 'CUSTOMER'">
+          <div *ngIf="jobRequest.status==='PENDING'">
+            <button class="btn btn--secondary" (click)="onEditClick()">
+              <i class="bi bi-gear"></i> Edit
+            </button>
+          </div>
+          <div *ngIf="jobRequest.status!=='ACCEPTED'">
+            <button class="btn btn--danger" (click)="onDeleteClick()">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+
+        <div class="btn-group" *ngIf="mode === 'ADMIN'">
+          <button class="btn btn--danger" (click)="onDeleteClick()">
+            <i class="bi bi-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<app-report-dialog *ngIf="mode === 'WORKER'"
+                   id="report-dialog"
+                   [reportWhat]="jobForReport?.title"
+                   (confirm)="onReportConfirm($event)"
+></app-report-dialog>
+
+<app-confirm-delete-dialog *ngIf="mode !== 'WORKER'"
+                           id="delete-dialog"
+                           [hidden]="!jobRequest"
+                           [deleteWhat]="jobRequest?.title"
+                           (confirm)="deleteJob(jobRequest)">
+</app-confirm-delete-dialog>

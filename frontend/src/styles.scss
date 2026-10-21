@@ -1,0 +1,565 @@
+/* =================================================================== */
+/* 1. GLOBAL STYLES & DEFINITIONS                                    */
+/* =================================================================== */
+
+// Import Toastr for notifications
+@use 'ngx-toastr/toastr';
+@import "primeicons/primeicons.css";
+
+// --- Sass Color Variables (for use in functions like darken()) ---
+$primary-color: #605f5f;
+$secondary-color: #385f81;
+$success-color: #198754;
+$danger-color: #dc3545;
+$warning-color: #ffc107;
+$info-color: #0dcaf0;
+$light-color: #f8f9fa;
+$dark-color: #212529;
+$border-color: #dee2e6;
+$text-color: #212529;
+$text-color-muted: #6c757d;
+$body-bg: #f4f7f9;
+$white: #fff;
+$font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+$border-radius: 4px;
+
+// --- CSS Custom Properties (for browser runtime) ---
+:root {
+  --primary-color: #{$primary-color};
+  --secondary-color: #{$secondary-color};
+  --success-color: #{$success-color};
+  --danger-color: #{$danger-color};
+  --warning-color: #{$warning-color};
+  --info-color: #{$info-color};
+  --light-color: #{$light-color};
+  --dark-color: #{$dark-color};
+  --border-color: #{$border-color};
+  --text-color: #{$text-color};
+  --text-color-muted: #{$text-color-muted};
+  --body-bg: #{$body-bg};
+  --white: #{$white};
+  --font-family-sans-serif: #{$font-family-sans-serif};
+}
+
+// --- Global Resets & Base Styles ---
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-sans-serif), sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--body-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  &:hover {
+    color: darken($primary-color, 10%);
+  }
+}
+
+// Adjust for sticky header if needed
+.main-content {
+  padding-top: 70px;
+}
+
+.min-width {
+  width: 1%;
+  white-space: nowrap;
+  padding-right: 0.5rem;
+}
+
+/* =================================================================== */
+/* 2. UNIFIED BUTTON SYSTEM                                          */
+/* =================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-weight: 500;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 0.3rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+
+  .bi {
+    vertical-align: -0.125em;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+// --- Button Color Modifiers (Solid Buttons) ---
+button.btn--primary, a.btn--primary {
+  color: $white;
+  background-color: $primary-color;
+  border-color: $primary-color;
+  &:hover:not(:disabled) { background-color: darken($primary-color, 10%); }
+}
+
+button.btn--secondary, a.btn--secondary {
+  color: $white;
+  background-color: $secondary-color;
+  border-color: $secondary-color;
+  &:hover:not(:disabled) { background-color: darken($secondary-color, 10%); }
+}
+
+button.btn--success, a.btn--success {
+  color: $white;
+  background-color: $success-color;
+  border-color: $success-color;
+  &:hover:not(:disabled) { background-color: darken($success-color, 10%); }
+}
+
+button.btn--danger, a.btn--danger {
+  color: $white;
+  background-color: $danger-color;
+  border-color: $danger-color;
+  &:hover:not(:disabled) { background-color: darken($danger-color, 10%); }
+}
+
+button.btn--warning, a.btn--warning {
+  color: $dark-color;
+  background-color: $warning-color;
+  border-color: $warning-color;
+  &:hover:not(:disabled) { background-color: darken($warning-color, 10%); }
+}
+
+// --- Button Outline Modifier ---
+button.btn--outline, a.btn--outline {
+  color: $secondary-color;
+  border-color: $secondary-color;
+  background-color: transparent;
+  &:hover:not(:disabled) {
+    background-color: $secondary-color;
+    color: $white;
+  }
+}
+
+// --- Button Sizing ---
+.btn--sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn--full {
+  width: 100%;
+}
+
+// --- Button Animation ---
+button:active:not(mat-slide-toggle button) {
+  box-shadow: 0 0 2px darkslategray;
+  transform: translateY(2px);
+}
+
+/* =================================================================== */
+/* 3. RESPONSIVE PAGE & FORM LAYOUTS                                   */
+/* =================================================================== */
+
+// --- Centered Form/Page Layout ---
+.form-page-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+  width: 100%;
+  padding: 2rem 1rem;
+}
+
+.form-page-card {
+  width: 100%;
+  max-width: 550px;
+  background-color: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+
+  &__body {
+    padding: 2rem 2.5rem;
+  }
+
+  &__title {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    font-weight: 600;
+  }
+}
+
+// --- Main App Layout (Sidebar + Content) ---
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+
+  @media (min-width: 992px) {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+    align-items: flex-start;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 15px;
+  }
+}
+
+.sidebar-column {
+  position: fixed;
+  z-index: 110;
+  background-color: var(--white);
+  overflow-y: auto;
+  transition: transform 0.3s ease-in-out;
+
+  // Mobile Top-Down Default
+  width: 100%;
+  height: auto;
+  max-height: 85vh;
+  left: 0;
+  top: 0;
+  border-radius: 0 0 12px 12px;
+  transform: translateY(-100%);
+
+  &.is-open {
+    transform: translateY(0);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  }
+
+  // Desktop Side-by-side Override
+  @media (min-width: 992px) {
+    position: sticky;
+    top: 90px;
+    height: 100vh;
+    width: 300px;
+    max-width: 85%;
+    transform: translateX(0);
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+
+  &.is-active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @media (min-width: 992px) {
+    display: none;
+  }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.page-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* =================================================================== */
+/* 4. COMMON COMPONENTS                                              */
+/* =================================================================== */
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background-color: var(--white);
+  color: var(--text-color-muted);
+  margin-top: 1rem;
+}
+
+// --- Reusable Table Component ---
+.table-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.table-container h2{
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.table-card {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 0;
+  color: var(--dark-color);
+  border-collapse: collapse;
+
+  th, td {
+    padding: 0.75rem;
+    vertical-align: middle;
+    text-align: left;
+    border-top: 1px solid var(--border-color);
+  }
+
+  thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+  }
+
+  &.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.045);
+  }
+
+  // Row status colors
+  .table-row-success { background-color: lighten($success-color, 45%); }
+  .table-row-warning { background-color: lighten($warning-color, 35%); }
+  .table-row-danger  { background-color: lighten($danger-color, 38%); }
+
+
+  // Responsive Behavior
+  @media (max-width: 768px) {
+    thead {
+      display: none;
+    }
+
+    tr {
+      display: block;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    td {
+      display: block;
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+      border: none;
+      border-bottom: 1px solid var(--border-color);
+
+      &:last-child { border-bottom: none; }
+
+      &::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.75rem;
+        width: calc(50% - 1.5rem);
+        font-weight: bold;
+        text-align: left;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+// --- Form Element Styling ---
+.form-section {
+  background-color: var(--light-color);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 500;
+    color: #555;
+  }
+}
+
+.form-control, .form-select {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: 0;
+  }
+
+  &.is-invalid {
+    border-color: var(--danger-color);
+    &:focus {
+      box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.invalid-feedback {
+  display: block;
+  color: var(--danger-color);
+  font-size: 0.875em;
+  margin-top: 0.5rem;
+}
+
+// --- Alert Component ---
+.alert {
+  position: relative;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+}
+.alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+.alert-warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+
+
+// --- Tab Component ---
+/*.nav-tabs {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+
+  .nav-item {
+    margin-bottom: -1px;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-color-muted);
+    border: 1px solid transparent;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+    &:hover {
+      border-color: var(--border-color);
+    }
+    &.active {
+      color: var(--text-color);
+      background-color: var(--body-bg);
+      border-color: var(--border-color) var(--border-color) transparent;
+    }
+  }
+}*/
+
+.table-container .nav-tabs {
+  border-bottom: none;
+  margin-bottom: 0;
+
+  .nav-item {
+    .nav-link {
+      color: $dark-color;
+      padding: 0.5rem 1rem;
+      border: 1px solid transparent;
+      border-top-left-radius: $border-radius;
+      border-top-right-radius: $border-radius;
+      &:hover {
+        color: $dark-color;
+      }
+      &.active {
+        background-color: $light-color;
+        border-color: $border-color $border-color transparent;
+        color: $dark-color;
+      }
+    }
+  }
+}
+
+.navbar .nav-link.active span {
+  background-color: $primary-color;
+  border: 1px solid $primary-color;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.4s ease;
+  padding: 5px 10px;
+}
+
+
+/* =================================================================== */
+/* 5. VENDOR OVERRIDES                                               */
+/* =================================================================== */
+
+// --- PrimeNG Galleria ---
+:host ::ng-deep {
+  .p-galleria {
+    .p-galleria-thumbnail-item {
+      opacity: 0.7;
+      transition: all 0.3s;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 1;
+        transform: translateY(-3px);
+      }
+
+      &.p-galleria-thumbnail-item-active {
+        opacity: 1;
+        border: 2px solid $primary-color !important;
+      }
+    }
+  }
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

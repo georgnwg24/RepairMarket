@@ -1,0 +1,50 @@
+<div class="chat-wrapper">
+  <div class="chat-container">
+
+    <!-- Chat List -->
+    <div class="chat-list" [class.hidden]="isMobile && selectedChatId !== null">
+      <app-chat-list
+        [chatsOverview]="chatsOverview"
+        [selectedChatId]="selectedChatId"
+        (selectChat)="onChatSelected($event)"
+        (deleteChat)="onChatDeleted($event)">
+      </app-chat-list>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chat-window" [class.hidden]="isMobile && selectedChatId === null">
+
+      @if (!selectedChatId) {
+      <div class="text-muted d-flex justify-content-center start-messaging">
+        Select a chat to start messaging.
+      </div>
+      } @else {
+      <div class="header-with-button">
+        @if(isMobile) {
+        <p-button
+          icon="pi pi-chevron-left"
+          (onClick)="goBack()">
+        </p-button>
+        }
+
+        @if(selectedChatBanned) {
+        <div class="chat-header px-3" style="color: red">
+          USER HAS BEEN BANNED
+        </div>
+        } @else {
+        <div class="chat-header px-3">
+          {{getTitle()}}
+        </div>
+        }
+
+      </div>
+
+      <app-chat-window
+        [chatId]="selectedChatId!"
+        [currentUsername]="currentUsername">
+      </app-chat-window>
+      }
+    </div>
+
+  </div>
+</div>

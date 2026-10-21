@@ -1,0 +1,21 @@
+<div [formGroup]="parentForm">
+  <select formControlName="countryCode" class="form-select mb-2" (change)="onCountryChange()">
+    <option [ngValue]=null disabled>Select a country...</option>
+    <option *ngFor="let code of selectableCountries" [value]="code">{{ countryMap[code] }}</option>
+  </select>
+  <div class="row gx-2">
+    <div class="col">
+      <input type="text" formControlName="postalCode" class="form-control" placeholder="Postal Code" (blur)="onPostalCodeChange()" />
+    </div>
+    <div class="col">
+      <select *ngIf="areaOptions.length > 1" formControlName="area" class="form-select">
+        <option *ngFor="let option of areaOptions" [value]="option">{{ option }}</option>
+      </select>
+      <input *ngIf="areaOptions.length <= 1" type="text" formControlName="area" class="form-control" placeholder="Area" [readOnly]="isAreaLocked" />
+
+      <div *ngIf="noAreaFoundError" class="text-danger mt-1" style="font-size: 0.875em;">
+        No area found for this postal code. Please enter manually.
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,116 @@
+.chat-wrapper {
+  background-color: whitesmoke;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+
+  .chat-container {
+    display: flex;
+    border-radius: 15px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    height: 85vh;
+    width: 1000px;
+
+    .chat-list,
+    .chat-window {
+      box-sizing: border-box;
+    }
+
+    .chat-list {
+      flex: 0 0 33%;
+      overflow-y: auto;
+      border-right: 1px solid #dee2e6;
+    }
+
+    .chat-window {
+      flex: 0 1 67%;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+
+      .start-messaging {
+        margin-top: 50%;
+      }
+
+      .chat-header {
+        line-height: 50px;
+        border-bottom: 1px solid #dee2e6;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    app-chat-window {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 10;
+    }
+
+    .hidden {
+      display: none;
+    }
+  }
+
+
+  @media (max-width: 800px) {
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+
+      .chat-list,
+      .chat-window {
+        flex: 1 1 auto;
+        width: 100%;
+        padding: 1rem;
+        height: 100px;
+
+      }
+
+      .chat-list.hidden,
+      .chat-window.hidden {
+        display: none;
+      }
+
+      .back-button {
+        margin-bottom: 1rem;
+      }
+    }
+
+    .header-with-button {
+      display: flex;
+      flex-direction: row;
+      border-bottom: 1px solid #dee2e6;
+
+      width: 100%;
+      align-items: center;
+
+    }
+
+    .header-with-button .chat-header {
+      /* This overrides "flex: 0 0 50px" and allows the element to grow */
+      flex: 1;
+
+      /* The line-height might not be needed here anymore, but you can test that */
+      line-height: 50px;
+
+      /* These original properties are good to keep for handling long titles */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      /* Make sure to remove the fixed border and width from your debugging */
+    }
+
+  }
+}

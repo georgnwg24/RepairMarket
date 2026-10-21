@@ -1,0 +1,95 @@
+<section class="form-page-section">
+  <div class="form-page-card">
+    <div class="form-page-card__body">
+
+      <div *ngIf="error" class="alert alert-danger">
+        <strong>Registration error!</strong> {{ errorMessage }}
+        <button type="button" (click)="vanishError()" class="btn-close" aria-label="Close"></button>
+      </div>
+
+      <h3 class="form-page-card__title">Create Your Account</h3>
+
+      <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="mb-3">
+          <input type="text" formControlName="username" class="form-control" placeholder="Username"
+                 [ngClass]="{ 'is-invalid': submitted && form.username.errors }"/>
+          <div *ngIf="submitted && form.username.errors" class="invalid-feedback">
+            <div *ngIf="form.username.errors.required">Username is required.</div>
+            <div *ngIf="form.username.errors.serverError">{{ form.username.errors.serverError }}</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <input type="email" formControlName="email" class="form-control" placeholder="Email"
+                 [ngClass]="{ 'is-invalid': submitted && form.email.errors }"/>
+          <div *ngIf="submitted && form.email.errors" class="invalid-feedback">
+            <div *ngIf="form.email.errors.required">Email is required.</div>
+            <div *ngIf="form.email.errors.email">Please provide a valid email address.</div>
+            <div *ngIf="form.email.errors.serverError">{{ form.email.errors.serverError }}</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <input type="password" formControlName="password" class="form-control" placeholder="Password"
+                 [ngClass]="{ 'is-invalid': submitted && form.password.errors }"/>
+          <div *ngIf="submitted && form.password.errors" class="invalid-feedback">
+            <div *ngIf="form.password.errors.required">Password is required.</div>
+            <div *ngIf="form.password.errors.minlength">Password must be at least 8 characters long.</div>
+            <div *ngIf="form.password.errors.serverError">{{ form.password.errors.serverError }}</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <input type="password" formControlName="confirmPassword" class="form-control" placeholder="Confirm Password"
+                 [ngClass]="{ 'is-invalid': submitted && (form.confirmPassword.errors || registrationForm.errors?.mustMatch) }"/>
+          <div *ngIf="submitted && form.confirmPassword.errors" class="invalid-feedback">
+            <div *ngIf="form.confirmPassword.errors.required">Confirming your password is required.</div>
+          </div>
+          <div *ngIf="submitted && registrationForm.hasError('mustMatch') && !form.confirmPassword.hasError('required')"
+               class="invalid-feedback d-block">
+            Passwords do not match.
+          </div>
+        </div>
+
+
+        <div class="mb-3">
+          <label class="form-label">I am a...</label>
+          <div class="role-options">
+            <div class="role-option">
+              <input class="role-radio" type="radio" id="roleCustomer" formControlName="role" value="CUSTOMER" />
+              <label class="role-option-label" for="roleCustomer">Customer</label>
+            </div>
+            <div class="role-option">
+              <input class="role-radio" type="radio" id="roleWorker" formControlName="role" value="WORKER" />
+              <label class="role-option-label" for="roleWorker">Worker</label>
+            </div>
+          </div>
+          <div *ngIf="submitted && form.role.errors?.required" class="text-danger small mt-1">
+            Please select a role.
+          </div>
+        </div>
+
+        <div class="row gx-2 mb-3">
+          <div class="col"><input type="text" formControlName="firstName" class="form-control" placeholder="First Name" /></div>
+          <div class="col"><input type="text" formControlName="lastName" class="form-control" placeholder="Last Name" /></div>
+        </div>
+
+        <div *ngIf="isWorker" class="worker-fields-container">
+          <app-area-finder [parentForm]="registrationForm"></app-area-finder>
+          <div *ngIf="submitted">
+            <div *ngIf="form.countryCode.errors?.required" class="text-danger small mt-1">Country is required for workers.</div>
+            <div *ngIf="form.postalCode.errors?.required" class="text-danger small mt-1">Postal code is required for workers.</div>
+            <div *ngIf="form.area.errors?.required" class="text-danger small mt-1">Area is required for workers.</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--secondary btn--full mt-3">Register</button>
+
+        <div class="text-center mt-3 small">
+          ALREADY HAVE AN ACCOUNT? | <a [routerLink]="['/login']">LOGIN HERE</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,101 @@
+<div class="table-container">
+  <h2>Licenses</h2>
+
+  <div class="search-wrapper mb-3" style="margin-bottom: 1rem;">
+    <input type="text" [formControl]="searchControl"
+           placeholder="Search licenses by username…"
+           class="form-control"
+    />
+  </div>
+
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:void(0)" [class.active]="selectedTab==='pending'"
+         (click)="selectTab('pending')">Pending</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:void(0)" [class.active]="selectedTab==='approved'"
+         (click)="selectTab('approved')">Approved</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:void(0)" [class.active]="selectedTab==='rejected'"
+         (click)="selectTab('rejected')">Rejected</a>
+    </li>
+  </ul>
+
+  <div class="table-card">
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+    <table class="table table-hover">
+      <thead *ngIf="getCurrentList().length > 0">
+      <tr>
+        <th>Filename</th>
+        <th>User</th>
+        <th>Description</th>
+        <th>Uploaded At</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+
+      <tr *ngIf="loading">
+        <td colspan="6" class="text-center p-4">Loading licenses...</td>
+      </tr>
+
+      <tr *ngFor="let license of getCurrentList()">
+        <td data-label="Filename">
+          <a href="javascript:void(0)" (click)="openFile(license)">{{ license.filename }}</a>
+        </td>
+        <td data-label="User">{{ license.username }}</td>
+        <td data-label="Description">{{ license.description }}</td>
+        <td data-label="Uploaded At">{{ license.uploadTime | date:'short' }}</td>
+        <td data-label="Actions">
+          <div class="btn-group">
+            <button *ngIf="selectedTab!=='approved'" class="btn btn--success btn--sm" (click)="onApprove(license)">
+              <i class="bi bi-check-circle"></i>
+            </button>
+            <button *ngIf="selectedTab!=='rejected'" class="btn btn--danger btn--sm" (click)="onReject(license)">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="!loading && !error && getCurrentList().length === 0">
+        <td colspan="5" class="text-center p-4">No {{ selectedTab }} licenses found.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  @if (selectedTab === 'approved' && approvedLicenses.totalElements > 0) {
+    <div class="card flex justify-center">
+      <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="approvedLicenses.offset"
+        [rows]="approvedLicenses.pageSize"
+        [totalRecords]="approvedLicenses.totalElements"
+        [rowsPerPageOptions]="[10, 20, 30]"
+      />
+    </div>
+  } @else if (selectedTab === 'rejected' && rejectedLicenses.totalElements > 0) {
+    <div class="card flex justify-center">
+      <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="rejectedLicenses.offset"
+        [rows]="rejectedLicenses.pageSize"
+        [totalRecords]="rejectedLicenses.totalElements"
+        [rowsPerPageOptions]="[10, 20, 30]"
+      />
+    </div>
+  } @else if (selectedTab === 'pending' && pendingLicenses.totalElements > 0) {
+    <div class="card flex justify-center">
+      <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="pendingLicenses.offset"
+        [rows]="pendingLicenses.pageSize"
+        [totalRecords]="pendingLicenses.totalElements"
+        [rowsPerPageOptions]="[10, 20, 30]"
+      />
+    </div>
+  }
+
+
+</div>

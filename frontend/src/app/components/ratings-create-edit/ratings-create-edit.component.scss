@@ -1,0 +1,15 @@
+// Star Rating styles
+.star-rating {
+  font-size: 2.5rem;
+  cursor: pointer;
+
+  .bi {
+    color: #e4e5e9; // Unselected star color
+    transition: color 0.15s ease-in-out;
+    padding: 0 0.2rem;
+
+    &.is-selected {
+      color: var(--warning-color);
+    }
+  }
+}

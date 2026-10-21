@@ -1,0 +1,138 @@
+<aside class="search-sidebar">
+  <h4><i class="bi bi-search"></i> Filter Jobs</h4>
+
+  <!-- Text Search -->
+  <div class="filter-group">
+    <div class="filter-group__header" (click)="toggleSection('text')">
+      <label>Search by Title</label>
+      <i class="bi bi-chevron-down" [class.collapsed]="!sectionState['text']"></i>
+    </div>
+    <div class="filter-group__content" *ngIf="sectionState['text']">
+      <input type="text" id="text-search" class="form-control" placeholder="e.g., 'Lawn Mowing'..."
+             [(ngModel)]="searchModel.text" (ngModelChange)="onModelChange()"
+             maxlength="255">
+    </div>
+  </div>
+
+  <!-- Customer Mode -->
+  <ng-container *ngIf="mode === 'customer'">
+    <div class="filter-group">
+      <div class="filter-group__header" (click)="toggleSection('property')">
+        <label>Filter by Property</label>
+        <i class="bi bi-chevron-down" [class.collapsed]="!sectionState['property']"></i>
+      </div>
+      <div class="filter-group__content" *ngIf="sectionState['property']">
+        <div class="property-button-group">
+          <div *ngFor="let prop of properties">
+            <input type="radio" class="btn-check" name="property" [id]="'prop-' + prop.id" [value]="prop.id"
+                   [checked]="prop.id === searchModel.selectedPropertyId" (click)="selectProperty(prop.id)" autocomplete="off">
+            <label class="btn btn-outline-secondary" [for]="'prop-' + prop.id">{{ prop.address }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group__header" (click)="toggleSection('deadline')">
+        <label>Deadline Before</label>
+        <i class="bi bi-chevron-down" [class.collapsed]="!sectionState['deadline']"></i>
+      </div>
+      <div class="filter-group__content" *ngIf="sectionState['deadline']">
+        <input type="date" id="deadline-before" class="form-control"
+               max="9999-12-31"
+               [(ngModel)]="searchModel.deadlineBefore" (ngModelChange)="onModelChange()">
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Worker Mode -->
+  <ng-container *ngIf="mode === 'worker'">
+    <div class="filter-group">
+      <div class="filter-group__header" (click)="toggleSection('price')">
+        <label>Lowest Offer Price (€)</label>
+        <i class="bi bi-chevron-down" [class.collapsed]="!sectionState['price']"></i>
+      </div>
+      <div class="filter-group__content" *ngIf="sectionState['price']">
+        <div class="price-range-inputs">
+          <input type="number" class="form-control" placeholder="Min" [(ngModel)]="searchModel.priceMin" (ngModelChange)="onModelChange()" min="0" aria-label="Minimum price">
+          <span class="price-range-separator">–</span>
+          <input type="number" class="form-control" placeholder="Max" [(ngModel)]="searchModel.priceMax" (ngModelChange)="onModelChange()" min="0" aria-label="Maximum price">
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group__header" (click)="toggleSection('deadline')">
+        <label>Deadline After</label>
+        <i class="bi bi-chevron-down" [class.collapsed]="!sectionState['deadline']"></i>
+      </div>
+      <div class="filter-group__content" *ngIf="sectionState['deadline']">
+        <input type="date" id="deadline-after" class="form-control"
+               max="9999-12-31"
+               [(ngModel)]="searchModel.deadlineAfter" (ngModelChange)="onModelChange()">
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group__header" (click)="toggleSection('distance')">
+        <label>Search Distance<span *ngIf="searchModel.distanceEnabled">: {{ searchModel.distance }} km</span></label>
+        <i class="bi bi-chevron-down" [class.collapsed]="!sectionState['distance']"></i>
+      </div>
+      <div class="filter-group__content" *ngIf="sectionState['distance']">
+        <div class="distance-controls">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="searchModel.distanceEnabled"
+                   (ngModelChange)="onModelChange()" id="distanceEnabled">
+            <label class="form-check-label" for="distanceEnabled"></label>
+          </div>
+          <input type="range" class="form-range" id="distance-slider" min="1" max="300" step="1"
+                 [(ngModel)]="searchModel.distance"
+                 (ngModelChange)="onDistanceSliderChange()">
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Status Filter (Customer & Admin) -->
+  <ng-container *ngIf="mode === 'customer' || mode === 'admin'">
+    <div class="filter-group">
+      <div class="filter-group__header" (click)="toggleSection('status')">
+        <label>Status</label>
+        <i class="bi bi-chevron-down" [class.collapsed]="!sectionState['status']"></i>
+      </div>
+      <div class="filter-group__content" *ngIf="sectionState['status']">
+        <div class="checkbox-gallery">
+          <div *ngFor="let status of availableStatuses" class="form-check">
+            <input class="form-check-input" type="checkbox" [id]="'status-' + status"
+                   [(ngModel)]="searchModel.statuses[status]" (ngModelChange)="onModelChange()">
+            <label class="form-check-label" [for]="'status-' + status">{{ status | titlecase }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Categories Filter (All modes) -->
+  <div class="filter-group">
+    <div class="filter-group__header" (click)="toggleSection('categories')">
+      <label>Categories</label>
+      <i class="bi bi-chevron-down" [class.collapsed]="!sectionState['categories']"></i>
+    </div>
+    <div class="filter-group__content" *ngIf="sectionState['categories']">
+      <div class="checkbox-gallery">
+        <div *ngFor="let cat of availableCategories" class="form-check">
+          <input class="form-check-input" type="checkbox" [id]="'cat-' + cat"
+                 [(ngModel)]="searchModel.categories[cat]" (ngModelChange)="onModelChange()">
+          <label class="form-check-label" [for]="'cat-' + cat">{{ cat | titlecase }}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="mode === 'worker'">
+    <div class="filter-group">
+      <div class="text-end mb-3">
+        <button class="btn btn-primary mt-2" (click)="saveSearchAlert()">
+          <i class="bi bi-bell"></i> Save Search Alert
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</aside>

@@ -1,0 +1,102 @@
+<div class="table-container">
+  <h2>Reports</h2>
+
+  <div class="search-wrapper mb-3" style="margin-bottom: 1rem;">
+    <input
+    type="text"
+    [formControl]="searchControl"
+    placeholder="Search by reporter or target username…"
+    class="form-control"
+    />
+  </div>
+
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        [class.active]="selectedTab === 'open'"
+        [routerLink]="[]"
+        [queryParams]="{ tab: 'open' }"
+        queryParamsHandling="merge"
+      >
+        Open Reports
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        [class.active]="selectedTab === 'closed'"
+        [routerLink]="[]"
+        [queryParams]="{ tab: 'closed' }"
+        queryParamsHandling="merge"
+      >
+        Closed Reports
+      </a>
+    </li>
+  </ul>
+
+  <div class="table-card">
+    <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+    <table class="table table-hover">
+      <thead *ngIf="(selectedTab==='open' ? openReportsPage.content.length : closedReportsPage.content.length) !== 0">
+
+      <tr>
+        <th>Reporter</th>
+        <th>Target</th>
+        <th>Type</th>
+        <th>Reason</th>
+        <th>Reported At</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngIf="loading">
+        <td colspan="6" class="text-center p-4">Loading reports...</td>
+      </tr>
+      <tr *ngFor="let report of (selectedTab==='open' ? openReportsPage.content : closedReportsPage.content)">
+        <td data-label="Reporter">{{ report.reporterUsername }}</td>
+        <td data-label="Target">{{ report.targetUsername }}</td>
+        <td data-label="Type">{{ report.type.replace('_',' ') | titlecase }}</td>
+        <td data-label="Reason">{{ report.reason }}</td>
+        <td data-label="Reported At">{{ reportedAtAsLocaleString(report) }}</td>
+        <td data-label="Actions">
+          <div class="btn-group">
+            <button
+              class="btn btn--secondary btn--sm"
+              [routerLink]="['/admin/reports', report.id]"
+              aria-label="View Report Details">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button *ngIf="selectedTab==='open'"
+                    class="btn btn--danger btn--sm"
+                    (click)="onCloseReport(report)"
+                    aria-label="Close Report">
+              <i class="bi bi-x-circle"></i>
+            </button>
+            <button *ngIf="selectedTab==='closed'"
+                    class="btn btn--success btn--sm"
+                    (click)="onOpenReport(report)"
+                    aria-label="Open Report">
+              <i class="bi bi-check-circle"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="(!loading && selectedTab==='open' ? openReportsPage.content.length : closedReportsPage.content.length) === 0">
+        <td colspan="6" class="text-center p-4">No {{ selectedTab }} reports found.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div >
+  @if (selectedTab === 'open' && openReportsPage.content.length > 0) {
+    <div class="card flex justify-center">
+      <p-paginator (onPageChange)="onPageChange($event)" [first]="openReportsPage.offset" [rows]="openReportsPage.pageSize" [totalRecords]="openReportsPage.totalElements" [rowsPerPageOptions]="[10, 20, 30]" />
+    </div>
+  } @else if (selectedTab === 'closed' && closedReportsPage.content.length > 0) {
+    <div class="card flex justify-center">
+      <p-paginator (onPageChange)="onPageChange($event)" [first]="closedReportsPage.offset" [rows]="closedReportsPage.pageSize" [totalRecords]="closedReportsPage.totalElements" [rowsPerPageOptions]="[10, 20, 30]" />
+    </div>
+  }
+</div>
+
+

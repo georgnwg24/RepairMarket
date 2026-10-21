@@ -1,0 +1,100 @@
+<div class="job-card" *ngIf="job">
+  <!-- Image Section -->
+  <div class="job-card__image">
+    <div *ngIf="job.imageUrl; else noImage" class="job-thumbnail">
+      <img [src]="job.imageUrl" alt="Image for {{ job.title }}" onerror="this.onerror=null; this.src='assets/BRP_logo.png';">
+    </div>
+    <ng-template #noImage>
+      <div class="placeholder">No Image</div>
+    </ng-template>
+  </div>
+
+  <!-- Content Section -->
+  <div class="job-card__content">
+    <h4 class="job-card__title">{{ job.title }}</h4>
+    <p class="job-card__description" [title]="job.description">{{ job.description }}</p>
+
+    <!-- Details Section -->
+    <div class="job-card__details">
+      <div class="detail-item" *ngIf="job.deadlineLocale">
+        <span class="detail-item__label">Deadline:</span>
+        <span class="detail-item__value">{{ job.deadlineLocale }}</span>
+      </div>
+      <div class="detail-item" *ngIf="job.categoryDisplayName">
+        <span class="detail-item__label">Category:</span>
+        <span class="detail-item__value">{{ job.categoryDisplayName | titlecase }}</span>
+      </div>
+
+      <!-- Customer Mode Details -->
+      <ng-container *ngIf="mode === 'customer'">
+        <div class="detail-item" *ngIf="job.status">
+          <span class="detail-item__label">Status:</span>
+          <span class="detail-item__value">{{ job.status | titlecase }}</span>
+        </div>
+        <div class="detail-item" *ngIf="job.address">
+          <span class="detail-item__label">Property:</span>
+          <span class="detail-item__value">{{ job.address }}</span>
+        </div>
+      </ng-container>
+
+      <!-- Worker Mode Details -->
+      <ng-container *ngIf="mode === 'worker'">
+        <div class="detail-item">
+          <span class="detail-item__label">Lowest Offer:</span>
+          <span class="detail-item__value">{{ job.lowestPrice === 0 ? '-' : (job.lowestPrice | currency:'EUR') }}</span>
+        </div>
+      </ng-container>
+
+      <!-- Admin Mode Details -->
+      <ng-container *ngIf="mode === 'admin'">
+        <div class="detail-item" *ngIf="job.status">
+          <span class="detail-item__label">Status:</span>
+          <span class="detail-item__value">{{ job.status | titlecase }}</span>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="job-card__actions">
+      <!-- Worker Buttons -->
+      <div class="btn-group" *ngIf="mode === 'worker'">
+        <button class="btn btn--secondary btn--sm" (click)="onViewDetailsClick()">
+          <i class="bi bi-eye"></i> Details
+        </button>
+        <div *ngIf="job.status==='PENDING'">
+          <button class="btn btn--success btn--sm" (click)="onCreateOfferClick()">
+            <i class="bi bi-plus"></i> Offer
+          </button>
+        </div>
+        <button class="btn btn--danger btn--sm" (click)="onReportClick()">
+          <i class="bi bi-flag"></i> Report
+        </button>
+      </div>
+      <!-- Customer Buttons -->
+      <div class="btn-group" *ngIf="mode === 'customer'">
+        <button class="btn btn--secondary btn--sm" (click)="onViewDetailsClick()">
+          <i class="bi bi-eye"></i> Details
+        </button>
+        <div *ngIf="job.status==='PENDING'">
+          <button class="btn btn--secondary btn--sm" (click)="onEditClick()">
+            <i class="bi bi-gear"></i> Edit
+          </button>
+        </div>
+        <div *ngIf="job.status!=='ACCEPTED'">
+          <button class="btn btn--danger btn--sm" (click)="onDeleteClick()">
+            <i class="bi bi-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+      <!-- Admin Buttons -->
+      <div class="btn-group" *ngIf="mode === 'admin'">
+        <button class="btn btn--secondary btn--sm" (click)="onViewDetailsClick()">
+          <i class="bi bi-eye"></i> Details
+        </button>
+        <button class="btn btn--danger btn--sm" (click)="onDeleteClick()">
+          <i class="bi bi-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

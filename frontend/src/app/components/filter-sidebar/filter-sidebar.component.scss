@@ -1,0 +1,181 @@
+// Component-specific variables
+$primary-color: var(--primary-color, #1c1c1c);
+$secondary-color: var(--secondary-color, #6c757d);
+$white: var(--white, #fff);
+
+// --- Main Sidebar Styles ---
+.search-sidebar {
+  background-color: $white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #dee2e6);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  height: fit-content;
+
+  h4 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color, #dee2e6);
+    padding-bottom: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+// --- Filter Group Styles ---
+.filter-group {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 1rem;
+
+  &:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+}
+
+.filter-group__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+
+  label {
+    margin-bottom: 0;
+    font-weight: 500;
+  }
+
+  i.bi-chevron-down {
+    transition: transform 0.2s ease-in-out;
+    &.collapsed {
+      transform: rotate(-90deg);
+    }
+  }
+}
+
+.filter-group__content {
+  padding-top: 1rem;
+}
+
+// --- Styles for Property Filter Buttons ---
+.property-button-group {
+  display: flex;
+  flex-direction: column; // Stack buttons vertically
+  gap: 0.5rem;
+
+  .btn-check {
+    position: absolute;
+    clip: rect(0,0,0,0);
+    pointer-events: none;
+  }
+
+  .btn-outline-secondary {
+    width: 100%; // Make button take full width
+    text-align: left; // Align text to the left
+    justify-content: flex-start; // Align icon and text to the left
+    color: $primary-color;
+    border-color: #ced4da;
+    background-color: $white;
+
+    &:hover {
+      background-color: #e9ecef;
+    }
+  }
+
+  .btn-check:checked + .btn-outline-secondary {
+    background-color: $secondary-color;
+    color: $white;
+    border-color: $secondary-color;
+  }
+}
+
+// --- Styles for Standard Checkbox Filters (Status & Categories) ---
+.checkbox-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+  overflow-y: visible !important;
+  max-height: none !important;
+}
+
+.form-check {
+  padding-left: 1.75em;
+}
+
+.form-check-input {
+  cursor: pointer;
+  height: 1.25em;
+  width: 1.25em;
+  background-color: $white;
+  border: 1px solid #b0b0b0;
+
+  &:checked {
+    background-color: $primary-color;
+    border-color: $primary-color;
+  }
+
+  &:checked[type=checkbox] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba(28, 28, 28, 0.25);
+  }
+}
+
+.form-check-label {
+  cursor: pointer;
+  font-weight: 400;
+}
+
+// --- Styles for Distance Controls ---
+.distance-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .form-range {
+    flex: 1;
+  }
+}
+
+// --- Styles for Range Slider ---
+.form-range {
+  // When the slider is enabled, color it with the primary color
+  &:not(:disabled) {
+    &::-webkit-slider-thumb {
+      background-color: $primary-color;
+    }
+    &::-moz-range-thumb {
+      background-color: $primary-color;
+    }
+  }
+}
+
+
+// --- Price Range Input Styles ---
+.price-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .form-control {
+    min-width: 60px;
+    flex: 1;
+  }
+
+  .price-range-separator {
+    font-size: 1.2rem;
+    color: var(--text-color-muted, #6c757d);
+  }
+
+  input[type='number'] {
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+}
